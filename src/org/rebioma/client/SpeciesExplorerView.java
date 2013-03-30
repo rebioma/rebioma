@@ -13,8 +13,6 @@ import org.rebioma.client.gxt.treegrid.SpeciesExplorerPanel;
 import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
-import com.extjs.gxt.ui.client.Style.SelectionMode;
-import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -40,6 +38,8 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 
 	private final Button searchButton;
 	
+	private final Button uncheckAllButton;
+	
 	final Map<String, Integer> typeIndexMap = new HashMap<String, Integer>();
 	
 	/**
@@ -63,6 +63,8 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 	
 	private final HorizontalPanel toolHp = new HorizontalPanel();
 	
+	private final VerticalPanel verticalPanel;
+	
 	private List<OccurrenceSearchListener> occurrenceSearchListeners = null; 
 	
 	private SpeciesExplorerView() {
@@ -79,6 +81,7 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		final Label searchLabel = new Label(" " + constants.Search() + " ");
 		searchLabel.setStyleName("searchLabel");
 		searchButton = new Button(constants.Search());
+		uncheckAllButton = new Button("Clear all selected");
 
 		resultFilterLb.addItem(constants.Both(), "both");
 		resultFilterLb.addItem(constants.Public(), "public");
@@ -116,12 +119,14 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		resultFilterLb.setStyleName("ResultFilter");
 		
 		searchButton.addClickHandler(this);
+		uncheckAllButton.addClickHandler(this);
 		searchTypeBox.addChangeHandler(this);
 		resultFilterLb.addChangeHandler(this);
 		mainHp = new FlowPanel();
 		mainHp.add(searchLabel);
 		mainHp.add(searchTypeBox);
 		mainHp.add(searchButton);
+		mainHp.add(uncheckAllButton);
 		//initWidget(mainHp);
 		mainHp.setStyleName("Search-Form");
 		updateTaxonomieLink.addClickHandler(this);
@@ -134,28 +139,12 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 				HasVerticalAlignment.ALIGN_MIDDLE);
 		toolHp.setStyleName("OccurrenceView-ToolBar");//on utilise le css de OccurrenceView
 		
-		VerticalPanel vp = new VerticalPanel();
-//		infoPanel = new SpeciesInfoPanel();
-//		infoPanel.setBorders(true);
-//		infoPanel.setLayout(new FitLayout());
-		GridSelectionModel<SpeciesTreeModel> sm = new GridSelectionModel<SpeciesTreeModel>();
-		sm.setSelectionMode(SelectionMode.SINGLE);
-//		sm.addSelectionChangedListener(new SelectionChangedListener<SpeciesTreeModel>(){
-//			@Override
-//			public void selectionChanged(SelectionChangedEvent<SpeciesTreeModel> se) {
-//				infoPanel.updateInfo(se.getSelectedItem());
-//			}
-//			
-//		});
-		speciesExplorerPanel = new SpeciesExplorerPanel(sm);
-		speciesExplorerPanel.setStyleAttribute("margin", "10px 0px");
-		//speciesExplorerPanel.setWidth(700);
-		speciesExplorerPanel.setHeight(450);
-		vp.add(toolHp); 
-		vp.setCellHeight(toolHp, "25px");
-		vp.add(speciesExplorerPanel);
-//		vp.add(infoPanel);
-		initWidget(vp);
+		verticalPanel = new VerticalPanel();
+		verticalPanel.add(toolHp); 
+		verticalPanel.setCellHeight(toolHp, "25px");
+		speciesExplorerPanel = new SpeciesExplorerPanel(); 
+	    verticalPanel.add(speciesExplorerPanel.getTreeGrid());
+		initWidget(verticalPanel);
 		History.addValueChangeHandler(this);
 	}
 	
@@ -168,7 +157,8 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 	protected void resize(final int width, int height) {
 		int w = width - 20;
 		toolHp.setWidth(w + "px");
-		speciesExplorerPanel.setWidth(w);
+		verticalPanel.setWidth(w + "px");
+		speciesExplorerPanel.getTreeGrid().setWidth(w);
 		//infoPanel.setWidth(w);
 		Window.enableScrolling(toolHp.getOffsetWidth() - 10 > width);
 
@@ -316,6 +306,8 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 					}
 				});	
 			}
+		} else if(source == uncheckAllButton){
+			speciesExplorerPanel.getTreeGrid().setCheckedSelection(null);
 		}
 	}
 	
