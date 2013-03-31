@@ -2,6 +2,8 @@ package org.rebioma.client.gxt3.treegrid;
 
 import java.util.List;
 
+import org.rebioma.client.gxt3.treegrid.CheckboxTreeGrid.TreeGridNode;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ClientBundle;
@@ -65,6 +67,13 @@ public class CheckboxTreeGridView<M> extends GridView<M> {
 
 			for (M child : children) {
 				TreeNode<M> cn = findNode(child);
+				TreeGridNode<M> gn = (TreeGridNode<M>)cn;
+				//on force le TreeGrid à remettre les checked node à checked après l'expand
+				if(gn.getCheckState() == CheckState.CHECKED){
+					//pour simuler un changement d'etat, on decoche avant de le coché.
+					gn.setCheckState(CheckState.UNCHECKED);
+					tree.setChecked(child, CheckState.CHECKED);
+				}
 				if (cn != null && cn.isExpanded()) {
 					expand(cn);
 				}
