@@ -68,7 +68,21 @@ public class OccurrenceMarker extends Marker {
       String url = speciesMarkerUrls.get(species);
       if (url == null) {
         final char letter = (char) ('A' + index++);
-        url = "http://www.google.com/mapfiles/marker" + letter + ".png";
+        //url = "http://www.google.com/mapfiles/marker" + letter + ".png";
+        //documentation => https://developers.google.com/chart/image/docs/gallery/dynamic_icons#plain_pin
+        String iconColor;
+        String letterColor = "000000";
+        if(Boolean.TRUE.equals(occurrence.isValidated()) && Boolean.TRUE.equals(occurrence.getReviewed())){//reliable
+        	iconColor = "00ff00";//vert
+        } else if(Boolean.FALSE.equals(occurrence.isValidated()) && Boolean.TRUE.equals(occurrence.getReviewed())){//invalide
+        	iconColor = "ff0000";//rouge
+        } else if(Boolean.FALSE.equals(occurrence.getReviewed()) && Boolean.TRUE.equals(occurrence.isValidated())){//Questionnable
+        	iconColor = "0000ff";//blue
+        } else{
+        	//En attente de validation
+        	iconColor = "ffff00";;// "D9D919";//jaune
+        }
+        url = "http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld="+ letter +"|" + iconColor+ "|"+ letterColor;
         speciesMarkerUrls.put(species, url);
       }
       Icon icon = Icon.newInstance(baseIcon);
