@@ -72,12 +72,18 @@ public class OccurrenceMarker extends Marker {
         //documentation => https://developers.google.com/chart/image/docs/gallery/dynamic_icons#plain_pin
         String iconColor;
         String letterColor = "000000";
+        /*
+         *  - reliable => Occurrence.reviewed = 1 AND validated = 1
+		 *	- Invalidated => Occurrence.validated = 0
+		 *	- Questionable  => Occurrence.reviewed = 0
+		 *	- awaiting review => Occurrence.reviewed = NULL AND Occurrence.validated = 1
+         */
         if(Boolean.TRUE.equals(occurrence.isValidated()) && Boolean.TRUE.equals(occurrence.getReviewed())){//reliable
         	iconColor = "00ff00";//vert
-        } else if(Boolean.FALSE.equals(occurrence.isValidated()) && Boolean.TRUE.equals(occurrence.getReviewed())){//invalide
-        	iconColor = "ff0000";//rouge
-        } else if(Boolean.FALSE.equals(occurrence.getReviewed()) && Boolean.TRUE.equals(occurrence.isValidated())){//Questionnable
+        } else if(Boolean.FALSE.equals(occurrence.getReviewed())){//Questionnable
         	iconColor = "0000ff";//blue
+        } else if(Boolean.FALSE.equals(occurrence.isValidated())){//invalide
+        	iconColor = "ff0000";//rouge
         } else{
         	//En attente de validation
         	iconColor = "ffff00";;// "D9D919";//jaune
