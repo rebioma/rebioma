@@ -18,6 +18,8 @@ import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.bean.User;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -617,7 +619,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
     public void onClick(ClickEvent event) {
       Object source = event.getSource();
       if (source == displayField) {
-        DeferredCommand.addCommand(new Command() {
+    	  Scheduler.get().scheduleDeferred(new ScheduledCommand(){
           public void execute() {
             setEditorField();
           }
@@ -1925,7 +1927,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
     detailTree.addItem(curaItems);
     detailTree.addItem(taxoItems);
     detailTree.addItem(geoItems);
-    DeferredCommand.addCommand(new Command() {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
       public void execute() {
         String historyToken = History.getToken();
         if (!historyToken.equals("") && isMyView(historyToken)) {
@@ -2009,7 +2011,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
       }
       requiredItems.setState(true);
       loadUserComment();
-      DeferredCommand.addCommand(new Command() {
+      Scheduler.get().scheduleDeferred(new ScheduledCommand(){
         public void execute() {
           resize(Window.getClientWidth(), Window.getClientHeight());
         }
@@ -2169,7 +2171,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
     }
     final int h = height;
     final int w = width;
-    DeferredCommand.addCommand(new Command() {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
 
       public void execute() {
         mainSp.setPixelSize(w, h);

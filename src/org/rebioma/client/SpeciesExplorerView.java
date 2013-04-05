@@ -14,6 +14,8 @@ import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -233,7 +235,7 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 			mainHp.remove(resultFilterLb);
 			// publicRb.setValue(true);
 		}
-		DeferredCommand.addCommand(new Command() {
+		Scheduler.get().scheduleDeferred(new ScheduledCommand(){
 			public void execute() {
 				resize(Window.getClientWidth(),
 						Window.getClientHeight());

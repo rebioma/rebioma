@@ -43,8 +43,9 @@ import org.rebioma.client.maps.TileLayerLegend.LegendCallback;
 import org.rebioma.client.maps.TileLayerSelector;
 import org.rebioma.client.maps.TileLayerSelector.TileLayerCallback;
 
-import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -813,7 +814,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       handleOnValueChange(historyToken);
     }
     // History.fireCurrentHistoryState();
-    DeferredCommand.addCommand(new Command() {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
       public void execute() {
         resize(Window.getClientWidth(), Window.getClientHeight());
         isInitializing = false;
@@ -1127,7 +1128,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
   private ModelingControl getModelControl() {
     final ModelingControl modelControl = new ModelingControl();
-    DeferredCommand.addCommand(new Command() {
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
       public void execute() {
         Widget modelControlWidget = modelControl.getControlWidget();
         ControlPosition hideControlPosition = new ControlPosition(
@@ -1238,27 +1239,26 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     map.setHeight("100%");
     map.setCurrentMapType(DEFAULT_MAP_TYPE);
     // map.addControl(getModelControl());
-    DeferredCommand.addCommand(new Command() {
-      public void execute() {
-        map.addControl(geocoder);
-        map.addControl(envLayerSelector);
-        ScaleControl scaleControl = new ScaleControl();
-        LargeMapControl largeMapControl = new LargeMapControl();
-        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
+		@Override
+		public void execute() {
+			 map.addControl(geocoder);
+	        map.addControl(envLayerSelector);
+	        ScaleControl scaleControl = new ScaleControl();
+	        LargeMapControl largeMapControl = new LargeMapControl();
+	        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
 
-        map.addControl(scaleControl);
-        map.addControl(largeMapControl);
-        map.addControl(mapTypeControl);
+	        map.addControl(scaleControl);
+	        map.addControl(largeMapControl);
+	        map.addControl(mapTypeControl);
 
-        ControlPosition hideControlPosition = new ControlPosition(
-            ControlAnchor.TOP_RIGHT, 100, 10);
-        HideControl hideControl = new HideControl(hideControlPosition);
-        map.addControl(hideControl);
-        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
-        hideControl.addControlWidgetToHide(envLayerSelector.getControlWidget());
-
-      }
-
+	        ControlPosition hideControlPosition = new ControlPosition(
+	            ControlAnchor.TOP_RIGHT, 100, 10);
+	        HideControl hideControl = new HideControl(hideControlPosition);
+	        map.addControl(hideControl);
+	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
+	        hideControl.addControlWidgetToHide(envLayerSelector.getControlWidget());
+		}
     });
     map.addMapType(DEFAULT_MAP_TYPE);
     map.addMapType(MapType.getEarthMap());
@@ -1316,7 +1316,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	public void onPageSizeChange(int newPageSize) {
 	  OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
 	  occView.setPageSize(newPageSize);
-      //on recharge les données
+      //on recharge les donnï¿½es
       requestData(1);
 	}
 
