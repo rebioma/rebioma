@@ -17,8 +17,10 @@ package org.rebioma.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.rebioma.client.DataPager.PageListener;
 import org.rebioma.client.DetailView.FieldConstants;
@@ -32,18 +34,18 @@ import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.EnvLayerSelector;
-import org.rebioma.client.maps.GeocoderControl;
-import org.rebioma.client.maps.GeocoderControl.ArrowMarker;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.ModelEnvLayer;
 import org.rebioma.client.maps.ModelingControl;
-import org.rebioma.client.maps.OccurrenceMarker;
+import org.rebioma.client.maps.OccurrenceMarkerManager;
 import org.rebioma.client.maps.TileLayerLegend;
 import org.rebioma.client.maps.TileLayerLegend.LegendCallback;
 import org.rebioma.client.maps.TileLayerSelector;
 import org.rebioma.client.maps.TileLayerSelector.TileLayerCallback;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptException;
+import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -57,25 +59,22 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.maps.client.InfoWindow;
-import com.google.gwt.maps.client.InfoWindowContent;
-import com.google.gwt.maps.client.MapType;
+import com.google.gwt.maps.client.MapOptions;
+import com.google.gwt.maps.client.MapTypeId;
 import com.google.gwt.maps.client.MapWidget;
-import com.google.gwt.maps.client.control.ControlAnchor;
-import com.google.gwt.maps.client.control.ControlPosition;
-import com.google.gwt.maps.client.control.LargeMapControl;
-import com.google.gwt.maps.client.control.MenuMapTypeControl;
-import com.google.gwt.maps.client.control.ScaleControl;
-import com.google.gwt.maps.client.event.MapClickHandler;
-import com.google.gwt.maps.client.event.MapTypeChangedHandler;
-import com.google.gwt.maps.client.event.MapZoomEndHandler;
-import com.google.gwt.maps.client.event.MarkerClickHandler;
-import com.google.gwt.maps.client.event.MarkerRemoveHandler;
-import com.google.gwt.maps.client.geocode.LatLngCallback;
-import com.google.gwt.maps.client.geom.LatLng;
-import com.google.gwt.maps.client.overlay.Overlay;
+import com.google.gwt.maps.client.base.LatLng;
+import com.google.gwt.maps.client.controls.ControlPosition;
+import com.google.gwt.maps.client.controls.MapTypeControlOptions;
+import com.google.gwt.maps.client.events.click.ClickMapEvent;
+import com.google.gwt.maps.client.events.click.ClickMapHandler;
+import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapEvent;
+import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapHandler;
+import com.google.gwt.maps.client.events.zoom.ZoomChangeMapEvent;
+import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
+import com.google.gwt.maps.client.overlays.InfoWindow;
+import com.google.gwt.maps.client.overlays.InfoWindowOptions;
+import com.google.gwt.maps.client.overlays.Marker;
 import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -92,7 +91,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 
 /**
  * A type of view that shows a Google map displaying pageable occurrence data
@@ -163,13 +162,13 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     }
   }
 
-  private static class GeocoderResult extends Composite {
+  private static class MapGeocoderResult extends Composite {
     private final VerticalPanel vp = new VerticalPanel();
 
-    public GeocoderResult(LatLng point, String address) {
+    public MapGeocoderResult(LatLng point, String address) {
       vp.add(new Label(address));
       vp.setStyleName("address");
-      vp.add(new Label(point.toUrlValue(7)));
+      vp.add(new Label(point.getToUrlValue(7)));
       vp.setStyleName("latlong");
       initWidget(vp);
     }
@@ -202,7 +201,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
           panel.add(checkbox);
           checkbox.addValueChangeHandler(this);
           checkbox.addStyleName("modeling_check_box");
-          envLayer = new ModelEnvLayer("ModelOutput/"
+          envLayer = ModelEnvLayer.newInstance("ModelOutput/"
               + ascModel.getModelLocation() + "/" + itemLabel.getText() + "/"
               + ascModel.getModelLocation() + ".asc");
         }
@@ -277,9 +276,10 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       Object source = event.getSource();
       if (source == checkbox) {
         if (event.getValue()) {
-          map.addOverlay(envLayer.asOverlay());
+        	map.getOverlayMapTypes().push(envLayer.asOverlay());
+        	envLayer.setMapIndex(map.getOverlayMapTypes().getLength() - 1);
         } else {
-          map.removeOverlay(envLayer.asOverlay());
+        	map.getOverlayMapTypes().removeAt(envLayer.getMapIndex());
         }
       }
 
@@ -306,7 +306,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
     private void clearThisOverlay() {
       if (envLayer != null) {
-        map.removeOverlay(envLayer.asOverlay());
+        map.getOverlayMapTypes().removeAt(envLayer.getMapIndex());
       }
 
     }
@@ -514,13 +514,13 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       sb.append("</div>");
       occurrenceInfo.setHTML(sb.toString());
     }
-
+    
     public void onClick(ClickEvent event) {
       Object source = event.getSource();
       if (source == detailLink) {
         if (occurrence != null) {
           parent.switchView(DETAIL, false);
-          map.getInfoWindow().close();
+          closeInfoWindows();
           occurrenceListener.onOccurrenceSelected(occurrence);
         }
       } else if (source == showLayersLink) {
@@ -543,6 +543,8 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
   private String lookupValue;
 
   private LatLng lookupPoint;
+  
+  private final Set<InfoWindow> infoWindows = new HashSet<InfoWindow>();
 
   /**
    * Far enough out to show the entire country of Madagascar on a 800x600 Google
@@ -614,24 +616,42 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    * Note that this control has an asynchronous callback that issues a history
    * event.
    */
-  private final GeocoderControl geocoder = new GeocoderControl(
-      new LatLngCallback() {
-        public void onFailure() {
-          if (geocoderMarker != null) {
-            map.removeOverlay(geocoderMarker);
-          }
-          String address = geocoder.getAddress();
-          if ((address != null) && (address.trim().length() > 0)) {
-            Window
-                .confirm("Address not found. Add to the Madagascar Gazeteer?");
-          }
-        }
-
-        public void onSuccess(LatLng point) {
-          mapGeocoderResult(point);
-          handleHistoryEvent();
-        }
-      });
+  
+//  private final GeocoderControl geocoder = new GeocoderControl(new GeocoderRequestHandler() {
+//	
+//	@Override
+//	public void onCallback(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results, GeocoderStatus status) {
+//			if(GeocoderStatus.OK.equals(status)){
+//				 mapGeocoderResult(results);
+//		         handleHistoryEvent();	
+//			}else if(GeocoderStatus.ZERO_RESULTS.equals(status)){
+//				 Window.confirm("Address not found. Add to the Madagascar Gazeteer?");
+//			}else{ //failure
+//				for(Marker marker: geocoderMarkers){
+//					marker.setMap((MapWidget)null);
+//				}
+//			}
+//		
+//	}
+//});
+//  private final GeocoderControl geocoder = new GeocoderControl(
+//      new LatLngCallback() {
+//        public void onFailure() {
+//          if (geocoderMarker != null) {
+//            map.removeOverlay(geocoderMarker);
+//          }
+//          String address = geocoder.getAddress();
+//          if ((address != null) && (address.trim().length() > 0)) {
+//            Window
+//                .confirm("Address not found. Add to the Madagascar Gazeteer?");
+//          }
+//        }
+//
+//        public void onSuccess(LatLng point) {
+//          mapGeocoderResult(point);
+//          handleHistoryEvent();
+//        }
+//      });
 
   /**
    * The list box on the map that allows users to overlay environmental layers
@@ -664,34 +684,40 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    * is visible, the point is used to asynchronously lookup the layer value at
    * the clicked point via the layer legend.
    */
-  private final MapClickHandler mapClickHandler = new MapClickHandler() {
-    public void onClick(MapClickEvent event) {
-      if (envLayerInfo != null && event.getOverlay() == null) {
-        LatLng point = event.getLatLng();
-        TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
-        legend.lookupValue(point, envLegendCallback);
-      }
-    }
+  private final ClickMapHandler mapClickHandler = new ClickMapHandler() {
+	@Override
+	public void onEvent(ClickMapEvent event) {
+//		if (envLayerInfo != null && event.getSource() instanceof == null) {
+//	        LatLng point = event.getLatLng();
+//	        TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
+//	        legend.lookupValue(point, envLegendCallback);
+//	      }
+		new AlertMessageBox("Clickmap", event.getMouseEvent().getLatLng().getToUrlValue(7));
+	}
   };
 
   /**
    * This is the handler for map zoom events. After a zoom, it issues a history
    * event.
    */
-  private final MapZoomEndHandler mapZoomHandler = new MapZoomEndHandler() {
-    public void onZoomEnd(MapZoomEndEvent event) {
-      handleHistoryEvent();
-    }
+  private final ZoomChangeMapHandler mapZoomHandler = new ZoomChangeMapHandler() {
+		@Override
+		public void onEvent(ZoomChangeMapEvent event) {
+			handleHistoryEvent();
+			
+		}
   };
 
   /**
    * This is the handler for map type changes. After a change, it issues a
    * history event.
    */
-  private final MapTypeChangedHandler mapTypeHandler = new MapTypeChangedHandler() {
-    public void onTypeChanged(MapTypeChangedEvent event) {
-      handleHistoryEvent();
-    }
+  private final MapTypeIdChangeMapHandler mapTypeHandler = new MapTypeIdChangeMapHandler() {
+   
+	@Override
+	public void onEvent(MapTypeIdChangeMapEvent event) {
+		handleHistoryEvent();
+	}
   };
 
   /**
@@ -701,24 +727,24 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    */
   private boolean isHistoryChanging = false;
 
-  private final List<OccurrenceMarker> occurrenceMarkers = new ArrayList<OccurrenceMarker>();
+  private final List<OccurrenceMarkerManager> occurrenceMarkers = new ArrayList<OccurrenceMarkerManager>();
+  
+  private final List<Marker> geocoderMarkers = new ArrayList<Marker>();
 
   private final ActionTool actionTool;
 
   // private final HorizontalPanel idPanel = new HorizontalPanel();
 
-  private ArrowMarker geocoderMarker;
-
   private OccurrenceListener occurrenceListener;
 
   private final HistoryState historyState = new MapState();
-  private final Map<String, MapType> mapTypesMap = new HashMap<String, MapType>();
+  private final Map<String, MapTypeId> mapTypesMap = new HashMap<String, MapTypeId>();
   private final VerticalPanel mainVp = new VerticalPanel();
   /**
    * For some reason when make this static it cause a weird infinite
    * initializing, so make it non-static to solve this problem.
    */
-  private final MapType DEFAULT_MAP_TYPE = MapType.getPhysicalMap();
+  private final MapTypeId DEFAULT_MAP_TYPE = MapTypeId.TERRAIN;
   private static final String DEFAULT_STYLE = "OccurrenceMapView";
 
   private boolean isInitializing = true;
@@ -769,7 +795,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
     envLayerSelector = new EnvLayerSelector(this);
     initMap();
-    initMapTypesMap();
     modelSearch = new ModelSearch();
     leftTab = new TabPanel();
     leftTab.add(markerList, constants.MarkerResult());
@@ -975,7 +1000,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
   }
 
   public void setVisible(boolean visible) {
-    if (map.getCurrentMapType() == MapType.getEarthMap()) {
+    if (map.getMapTypeId() == MapTypeId.SATELLITE) {
       map.setVisible(visible);
     } else {
       map.setVisible(true);
@@ -984,16 +1009,17 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
   public void switchBack() {
     if (switched) {
-      map.setCurrentMapType(MapType.getEarthMap());
+      map.setMapTypeId(MapTypeId.SATELLITE);
     }
     switched = false;
   }
 
   public boolean temperalySwitchMapType() {
     switched = true;
-    boolean swit = map.getCurrentMapType() == MapType.getEarthMap();
+//    boolean swit = map.getCurrentMapType() == MapType.getEarthMap();
+    boolean swit = map.getMapTypeId() == MapTypeId.SATELLITE;
     if (swit) {
-      map.setCurrentMapType(DEFAULT_MAP_TYPE);
+      map.setMapTypeId(DEFAULT_MAP_TYPE);
     }
     return switched = swit;
   }
@@ -1013,16 +1039,15 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       isHistoryChanging = true;
       historyState.setHistoryToken(historyToken);
       int zoomLv = (Integer) historyState.getHistoryParameters(UrlParam.ZOOM);
-      map
-          .setZoomLevel(zoomLv == HistoryState.UNDEFINED ? DEFAULT_ZOOM
+      map.setZoom(zoomLv == HistoryState.UNDEFINED ? DEFAULT_ZOOM
               : zoomLv);
       map
           .setCenter((LatLng) historyState
               .getHistoryParameters(UrlParam.CENTER));
       // geocoder.setAddress();
-      geocoder.lookupAddress(historyState
-          .getHistoryParameters(UrlParam.ADDRESS)
-          + "");
+//      geocoder.lookupAddress(historyState
+//          .getHistoryParameters(UrlParam.ADDRESS)
+//          + "");
 
       int layerIndex = (Integer) historyState
           .getHistoryParameters(UrlParam.LAYER);
@@ -1041,10 +1066,10 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
           legend.setDisplay(point, value);
         }
       }
-      MapType mapType = getMapType(historyState
+      MapTypeId mapType = getMapType(historyState
           .getHistoryParameters(UrlParam.MAP_TYPE)
           + "");
-      map.setCurrentMapType(mapType);
+      map.setMapTypeId(mapType);
       Integer leftTabIndex = (Integer) historyState
           .getHistoryParameters(UrlParam.LEFT_TAB);
       if (leftTabIndex == null || leftTabIndex < 0) {
@@ -1070,30 +1095,39 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
         .equalsIgnoreCase(MAP);
   }
 
-  protected void mapGeocoderResult(LatLng point) {
-    String address = geocoder.getAddress();
-    StringBuilder sb = new StringBuilder();
-    GeocoderResult result = new GeocoderResult(point, address);
-    sb.append(result);
-    final InfoWindowContent content = new InfoWindowContent(result);
-    map.setCenter(point);
-    if (geocoderMarker != null) {
-      map.removeOverlay(geocoderMarker);
-    }
-    geocoderMarker = GeocoderControl.createMarker(point, address);
-    map.addOverlay(geocoderMarker);
-    geocoderMarker.addMarkerClickHandler(new MarkerClickHandler() {
-      public void onClick(MarkerClickEvent event) {
-        map.getInfoWindow().open(event.getSender(), content);
-      }
-    });
-    final InfoWindow info = map.getInfoWindow();
-    info.open(point, content);
-    geocoderMarker.addMarkerRemoveHandler(new MarkerRemoveHandler() {
-      public void onRemove(MarkerRemoveEvent event) {
-        info.close();
-      }
-    });
+  protected void mapGeocoderResult(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results) {
+//    String address = geocoder.getAddress();
+//    StringBuilder sb = new StringBuilder();
+//    LatLng point = null;
+//    for(int i=0;i< results.length();i++){
+//    	com.google.gwt.maps.client.services.GeocoderResult geoResult = results.get(i);
+//    	point = geoResult.getGeometry().getLocation();
+//    	MapGeocoderResult result = new MapGeocoderResult(point, address);
+//    	sb.append(result);
+//    	InfoWindowOptions contentOptions = InfoWindowOptions.newInstance();
+//    	contentOptions.setContent(result);
+//    	contentOptions.setPosition(point);
+//    	final InfoWindow content = InfoWindow.newInstance(contentOptions);
+//        if (geocoderMarkers != null) {
+//        	for(Marker marker: geocoderMarkers){
+//        		marker.setMap((MapWidget)null);
+//        	}
+//        }
+//        Marker geocoderMarker = GeocoderControl.createMarker(point, address);
+//        geocoderMarker.setMap(map);
+//        geocoderMarker.addClickHandler(new ClickMapHandler() {
+//			@Override
+//			public void onEvent(ClickMapEvent event) {
+//				closeInfoWindows();
+//				 content.open(map);
+//				infoWindows.add(content);
+//			}
+//		});
+//        geocoderMarkers.add(geocoderMarker);
+//    }
+//    if(results.length() == 1 && point != null){
+//    	map.setCenter(point);
+//    }
   }
 
   protected void resetToDefaultState() {
@@ -1107,20 +1141,20 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     }
     hsp.setSplitPosition("30%");
     mainVp.setPixelSize(width, height);
-    map.checkResizeAndCenter();
+//    map.checkResizeAndCenter();
   }
 
   private void clearOccurrenceMarkers() {
-    for (Overlay marker : occurrenceMarkers) {
-      map.removeOverlay(marker);
+    for (OccurrenceMarkerManager markerManager : occurrenceMarkers) {
+      markerManager.getMarker().setMap((MapWidget)null);
     }
     occurrenceMarkers.clear();
     markerList.clear();
   }
 
-  private MapType getMapType(String type) {
-    MapType mapType = mapTypesMap.get(type);
-    if (mapType == null) {
+  private MapTypeId getMapType(String type) {
+    MapTypeId mapType = MapTypeId.fromValue(type);
+    if (mapType == null || !mapTypesMap.containsValue(mapType)) {
       mapType = DEFAULT_MAP_TYPE;
     }
     return mapType;
@@ -1130,16 +1164,16 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     final ModelingControl modelControl = new ModelingControl();
     Scheduler.get().scheduleDeferred(new ScheduledCommand(){
       public void execute() {
-        Widget modelControlWidget = modelControl.getControlWidget();
-        ControlPosition hideControlPosition = new ControlPosition(
-            ControlAnchor.TOP_RIGHT, modelControl.getXOffset()
-                + modelControlWidget.getOffsetWidth() + 10, modelControl
-                .getYOffset());
-        HideControl hideControl = new HideControl(hideControlPosition);
-        map.addControl(hideControl);
-        hideControl.addControlWidgetToHide(modelControlWidget);
-        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
-        hideControl.addControlWidgetToHide(envLayerSelector.getControlWidget());
+//        Widget modelControlWidget = modelControl.getControlWidget();
+//        ControlPosition hideControlPosition = new ControlPosition(
+//            ControlAnchor.TOP_RIGHT, modelControl.getXOffset()
+//                + modelControlWidget.getOffsetWidth() + 10, modelControl
+//                .getYOffset());
+        HideControl hideControl = new HideControl();
+        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
+        hideControl.addControlWidgetToHide(modelControl);
+//        hideControl.addControlWidgetToHide(geocoder);
+        hideControl.addControlWidgetToHide(envLayerSelector);
       }
     });
     return modelControl;
@@ -1154,18 +1188,18 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     String query = urlParam.lower() + "=";
     switch (urlParam) {
     case ZOOM:
-      query += map.getZoomLevel();
+      query += map.getZoom();
       break;
     case CENTER:
-      query += map.getCenter().toUrlValue(7);
+      query += map.getCenter().getToUrlValue(7);
       break;
     case ADDRESS:
-      String address = geocoder.getAddress();
-      if ((address != null) && (address.length() > 0)) {
-        query += geocoder.getAddress();
-      } else {
-        query = "";
-      }
+//      String address = geocoder.getAddress();
+//      if ((address != null) && (address.length() > 0)) {
+//        query += geocoder.getAddress();
+//      } else {
+//        query = "";
+//      }
       break;
     case LEFT_TAB:
       int index = leftTab.getTabBar().getSelectedTab();
@@ -1181,11 +1215,11 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       query += modelSearch.getPage();
       break;
     case MAP_TYPE:
-      query += map.getCurrentMapType().getName(true);
+      query += map.getMapTypeId().toString();
       break;
     case LOOKUP_POINT:
       if (lookupPoint != null) {
-        query += lookupPoint.toUrlValue(7) + "&"
+        query += lookupPoint.getToUrlValue(7) + "&"
             + UrlParam.LOOKUP_VALUE.lower() + "=" + lookupValue;
       } else {
         query = "";
@@ -1233,17 +1267,29 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
   }
 
   private void initMap() {
-    map = new MapWidget(HistoryState.DEFAULT_CENTER, DEFAULT_ZOOM, "crosshair",
-        "move");
+	  MapOptions mapOptions = MapOptions.newInstance();
+	  mapOptions.setCenter(HistoryState.DEFAULT_CENTER);
+	  mapOptions.setZoom(DEFAULT_ZOOM);
+	  mapOptions.setDraggableCursor("crosshair");
+	  mapOptions.setDraggingCursor("move");
+	  mapOptions.setMapTypeId(DEFAULT_MAP_TYPE);
+	  MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions.newInstance();
+	  mapTypeControlOptions.setMapTypeIds(new MapTypeId[]{MapTypeId.TERRAIN, MapTypeId.ROADMAP, MapTypeId.SATELLITE});
+	  
+	  mapTypesMap.put(MapTypeId.TERRAIN.toString(), MapTypeId.TERRAIN);
+	  mapTypesMap.put(MapTypeId.ROADMAP.toString(), MapTypeId.ROADMAP);
+	  mapTypesMap.put(MapTypeId.SATELLITE.toString(), MapTypeId.SATELLITE);
+	  mapOptions.setMapTypeControlOptions(mapTypeControlOptions);
+	  mapOptions.setMapTypeControl(true);
+    map = new MapWidget(mapOptions);
     map.setWidth("100%");
     map.setHeight("100%");
-    map.setCurrentMapType(DEFAULT_MAP_TYPE);
     // map.addControl(getModelControl());
-    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
+    /*Scheduler.get().scheduleDeferred(new ScheduledCommand(){
 		@Override
 		public void execute() {
-			 map.addControl(geocoder);
-	        map.addControl(envLayerSelector);
+			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
+	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
 	        ScaleControl scaleControl = new ScaleControl();
 	        LargeMapControl largeMapControl = new LargeMapControl();
 	        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
@@ -1259,41 +1305,45 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
 	        hideControl.addControlWidgetToHide(envLayerSelector.getControlWidget());
 		}
-    });
-    map.addMapType(DEFAULT_MAP_TYPE);
-    map.addMapType(MapType.getEarthMap());
-    map.addMapClickHandler(mapClickHandler);
-    map.addMapZoomEndHandler(mapZoomHandler);
-    map.addMapTypeChangedHandler(mapTypeHandler);
-    map.checkResizeAndCenter();
-    MapType.getEarthMap();
+    });*/
+   map.addClickHandler(mapClickHandler);
+   map.addZoomChangeHandler(mapZoomHandler);
+   map.addMapTypeIdChangeHandler(mapTypeHandler);
+//    map.checkResizeAndCenter();
   }
-
-  private void initMapTypesMap() {
-    for (MapType mapType : map.getMapTypes()) {
-      mapTypesMap.put(mapType.getName(true), mapType);
-    }
-    // mapTypesMap.put(key, value)
+  
+  private void closeInfoWindows(){
+	  for(InfoWindow w: infoWindows){
+		  if(w != null){
+			  w.close();
+		  }
+	  }
+	  infoWindows.clear();
   }
 
   private void mapOccurrenceMarkers(List<Occurrence> occurrences) {
-    OccurrenceMarker.resetIcons();
-    OccurrenceMarker marker;
+    OccurrenceMarkerManager.resetIcons();
+    OccurrenceMarkerManager markerManager;
     List<Occurrence> unmappableOccs = new ArrayList<Occurrence>();
     for (Occurrence occurrence : occurrences) {
-      if (!OccurrenceMarker.isMappable(occurrence)) {
+      if (!OccurrenceMarkerManager.isMappable(occurrence)) {
         unmappableOccs.add(occurrence);
         continue;
       }
-      occurrenceMarkers.add(marker = new OccurrenceMarker(occurrence));
-      markerList.addItem(marker);
-      map.addOverlay(marker);
-      marker.addMarkerClickHandler(new MarkerClickHandler() {
-        public void onClick(MarkerClickEvent event) {
-          OccurrenceMarker marker = (OccurrenceMarker) event.getSender();
-          showWindowInfo(marker);
-        }
-      });
+      markerManager = OccurrenceMarkerManager.newInstance(occurrence);
+      occurrenceMarkers.add(markerManager);
+      markerList.addItem(markerManager);
+      Marker marker = markerManager.getMarker();
+      marker.setMap(map);
+      marker.addClickHandler(new ClickMapHandler() {
+			@Override
+			public void onEvent(ClickMapEvent event) {
+				if(event.getSource() instanceof OccurrenceMarkerManager){
+					OccurrenceMarkerManager marker = (OccurrenceMarkerManager) event.getSource();
+			          showWindowInfo(marker);
+				}
+			}
+		});
     }
     markerList.addUnmappableItems(unmappableOccs);
   }
@@ -1303,13 +1353,26 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     markerList.setOccurrenceListener(occurrenceListener);
   }
 
-  private void showWindowInfo(OccurrenceMarker occurrenceMarker) {
+  private void showWindowInfo(OccurrenceMarkerManager occurrenceMarkerManager) {
 	  if (summaryContent == null) {
       summaryContent = new OccurrenceSummaryContent();
     }
-    summaryContent.loadOccurrenceInfo(occurrenceMarker.getOccurrence());
-    map.getInfoWindow().open(occurrenceMarker,new InfoWindowContent(summaryContent));
-
+	closeInfoWindows();
+    summaryContent.loadOccurrenceInfo(occurrenceMarkerManager.getOccurrence());
+    //parent.getAbsoluteLeft();
+    InfoWindowOptions infoWindowOptions = InfoWindowOptions.newInstance();
+    infoWindowOptions.setPosition(occurrenceMarkerManager.getMarker().getPosition());
+    try{
+    	infoWindowOptions.setContent(summaryContent);
+    }catch(JavaScriptException e){
+    	//on reessaie
+    	//TODO determiner pourquoi pour un nombre paire(2ième, 4ième, ...) d'execution, il y a une JavaScriptException
+    	infoWindowOptions.setContent(summaryContent);
+    }
+    
+    InfoWindow infoWindow = InfoWindow.newInstance(infoWindowOptions);
+    infoWindow.open(map);
+    infoWindows.add(infoWindow);
   }
 
 	@Override

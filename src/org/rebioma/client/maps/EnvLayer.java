@@ -18,7 +18,8 @@ package org.rebioma.client.maps;
 import org.rebioma.client.bean.AscData;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.maps.client.geom.Point;
+import com.google.gwt.maps.client.base.Point;
+import com.google.gwt.maps.client.maptypes.TileUrlCallBack;
 
 /**
  * Represents an environmental layer that backed by an {@link AscData} that can
@@ -54,7 +55,6 @@ public class EnvLayer extends AscTileLayer {
   }
 
   private final AscData data;
-  private final double opacity;
 
   private TileLayerLegend legend;
 
@@ -65,8 +65,18 @@ public class EnvLayer extends AscTileLayer {
   public EnvLayer(AscData data, double opacity) {
     super();
     this.data = data;
-    this.opacity = opacity;
+    this.setOpacity(opacity);
     baseUrl = GWT.getModuleBaseURL() + "ascOverlay?f=" + data.getFileName();
+    this.setTileUrl(new TileUrlCallBack() {
+		@Override
+		public String getTileUrl(Point point, int zoomLevel) {
+			 String tileUrl = baseUrl;
+		    tileUrl += "&x=" + point.getX();
+		    tileUrl += "&y=" + point.getY();
+		    tileUrl += "&z=" + zoomLevel;
+		    return tileUrl;
+		}
+	});
   }
 
   @Override
@@ -76,19 +86,4 @@ public class EnvLayer extends AscTileLayer {
     }
     return legend;
   }
-
-  @Override
-  public double getOpacity() {
-    return opacity;
-  }
-
-  @Override
-  public String getTileURL(Point tile, int zoomLevel) {
-    String tileUrl = baseUrl;
-    tileUrl += "&x=" + tile.getX();
-    tileUrl += "&y=" + tile.getY();
-    tileUrl += "&z=" + zoomLevel;
-    return tileUrl;
-  }
-
 }
