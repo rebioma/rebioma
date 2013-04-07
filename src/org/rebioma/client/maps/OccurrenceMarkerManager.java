@@ -25,9 +25,12 @@ import org.rebioma.client.bean.OccurrenceSummary.OccurrenceFieldItem;
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.base.Point;
 import com.google.gwt.maps.client.base.Size;
+import com.google.gwt.maps.client.events.click.ClickMapEvent;
+import com.google.gwt.maps.client.events.click.ClickMapHandler;
 import com.google.gwt.maps.client.overlays.Marker;
 import com.google.gwt.maps.client.overlays.MarkerImage;
 import com.google.gwt.maps.client.overlays.MarkerOptions;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 
 public class OccurrenceMarkerManager{
 	private Marker marker;
@@ -94,6 +97,7 @@ public class OccurrenceMarkerManager{
 				}
 				url = "http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld="
 						+ letter + "|" + iconColor + "|" + letterColor;
+//				url = "http://www.google.com/mapfiles/marker" + letter + ".png";
 				speciesMarkerUrls.put(species, url);
 			}
 			MarkerImage iconImage = MarkerImage.newInstance(url); 
@@ -128,7 +132,7 @@ public class OccurrenceMarkerManager{
 		optionsManager.resetIcons();
 	}
 
-	private static LatLng getPoint(Occurrence occurrence) {
+	public static LatLng getPoint(Occurrence occurrence) {
 		double latitude = Double.parseDouble(occurrence.getDecimalLatitude());
 		double longitude = Double.parseDouble(occurrence.getDecimalLongitude());
 		return LatLng.newInstance(latitude, longitude);

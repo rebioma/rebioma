@@ -1285,12 +1285,12 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     map.setWidth("100%");
     map.setHeight("100%");
     // map.addControl(getModelControl());
-    /*Scheduler.get().scheduleDeferred(new ScheduledCommand(){
+    Scheduler.get().scheduleDeferred(new ScheduledCommand(){
 		@Override
 		public void execute() {
-			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
-	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
-	        ScaleControl scaleControl = new ScaleControl();
+			
+//			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
+	        /*ScaleControl scaleControl = new ScaleControl();
 	        LargeMapControl largeMapControl = new LargeMapControl();
 	        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
 
@@ -1299,16 +1299,18 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	        map.addControl(mapTypeControl);
 
 	        ControlPosition hideControlPosition = new ControlPosition(
-	            ControlAnchor.TOP_RIGHT, 100, 10);
-	        HideControl hideControl = new HideControl(hideControlPosition);
-	        map.addControl(hideControl);
-	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
-	        hideControl.addControlWidgetToHide(envLayerSelector.getControlWidget());
+	            ControlAnchor.TOP_RIGHT, 100, 10);*/
+//	        HideControl hideControl = new HideControl();
+//	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
+//	        envLayerSelector.setMap(map, ControlPosition.TOP_CENTER);
+//	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
+//	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
+//	        hideControl.addControlWidgetToHide(envLayerSelector);
 		}
-    });*/
-   map.addClickHandler(mapClickHandler);
-   map.addZoomChangeHandler(mapZoomHandler);
-   map.addMapTypeIdChangeHandler(mapTypeHandler);
+    });
+//   map.addClickHandler(mapClickHandler);
+//   map.addZoomChangeHandler(mapZoomHandler);
+//   map.addMapTypeIdChangeHandler(mapTypeHandler);
 //    map.checkResizeAndCenter();
   }
   
@@ -1323,14 +1325,13 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
   private void mapOccurrenceMarkers(List<Occurrence> occurrences) {
     OccurrenceMarkerManager.resetIcons();
-    OccurrenceMarkerManager markerManager;
     List<Occurrence> unmappableOccs = new ArrayList<Occurrence>();
     for (Occurrence occurrence : occurrences) {
       if (!OccurrenceMarkerManager.isMappable(occurrence)) {
         unmappableOccs.add(occurrence);
         continue;
       }
-      markerManager = OccurrenceMarkerManager.newInstance(occurrence);
+      final OccurrenceMarkerManager markerManager = OccurrenceMarkerManager.newInstance(occurrence);
       occurrenceMarkers.add(markerManager);
       markerList.addItem(markerManager);
       Marker marker = markerManager.getMarker();
@@ -1338,10 +1339,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       marker.addClickHandler(new ClickMapHandler() {
 			@Override
 			public void onEvent(ClickMapEvent event) {
-				if(event.getSource() instanceof OccurrenceMarkerManager){
-					OccurrenceMarkerManager marker = (OccurrenceMarkerManager) event.getSource();
-			          showWindowInfo(marker);
-				}
+				showWindowInfo(markerManager);
 			}
 		});
     }

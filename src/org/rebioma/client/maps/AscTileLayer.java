@@ -21,7 +21,9 @@ import com.google.gwt.maps.client.maptypes.ImageMapTypeOptions;
 /**
  * An abstract class that represents ASC tile layers.
  */
-public abstract class AscTileLayer extends ImageMapTypeOptions {
+public abstract class AscTileLayer {
+	
+	protected final ImageMapTypeOptions imageMapTypeOptions;
 
   /**
    * Allows {@link AscTileLayer} objects to be lazy loaded.
@@ -49,11 +51,12 @@ public abstract class AscTileLayer extends ImageMapTypeOptions {
 
   public AscTileLayer() {
     super();
+    imageMapTypeOptions = ImageMapTypeOptions.newInstance();
   }
 
   public ImageMapType asOverlay() {
     if (overlay == null) {
-      overlay = ImageMapType.newInstance(this);
+      overlay = ImageMapType.newInstance(imageMapTypeOptions);
     }
     return overlay;
   }
@@ -69,6 +72,10 @@ public abstract class AscTileLayer extends ImageMapTypeOptions {
    */
   public void setMapIndex(int idx){
 	  this.mapIndex = idx;
+  }
+  
+  public ImageMapTypeOptions getImageMapTypeOptions(){
+	  return imageMapTypeOptions;
   }
 
 }

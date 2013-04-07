@@ -182,6 +182,7 @@ public abstract class TileLayerSelector extends ListBox {
    */
   public void setMap(final MapWidget map, com.google.gwt.maps.client.controls.ControlPosition position) {
     this.map = map;
+    map.setControls(position, this);
     addItem(LOADING);
     loadLayers(new AsyncCallback<List<LayerInfo>>() {
       public void onFailure(Throwable caught) {

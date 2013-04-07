@@ -44,7 +44,7 @@ public class EnvLayer extends AscTileLayer {
 
       @Override
       protected AscTileLayer get() {
-        return new EnvLayer(data);
+        return EnvLayer.newInstance(data);
       }
     };
   }
@@ -54,29 +54,30 @@ public class EnvLayer extends AscTileLayer {
         + data.getYear();
   }
 
-  private final AscData data;
+  private AscData data;
 
   private TileLayerLegend legend;
 
-  public EnvLayer(AscData data) {
-    this(data, .5);
-  }
-
-  public EnvLayer(AscData data, double opacity) {
+  protected EnvLayer() {
     super();
-    this.data = data;
-    this.setOpacity(opacity);
-    baseUrl = GWT.getModuleBaseURL() + "ascOverlay?f=" + data.getFileName();
-    this.setTileUrl(new TileUrlCallBack() {
-		@Override
-		public String getTileUrl(Point point, int zoomLevel) {
-			 String tileUrl = baseUrl;
-		    tileUrl += "&x=" + point.getX();
-		    tileUrl += "&y=" + point.getY();
-		    tileUrl += "&z=" + zoomLevel;
-		    return tileUrl;
-		}
-	});
+  }
+  
+  public static EnvLayer newInstance(AscData data){
+	  final EnvLayer envLayer = new EnvLayer();
+	  envLayer.data = data;
+	  //envLayer.setOpacity(opacity);
+	  envLayer.baseUrl = GWT.getModuleBaseURL() + "ascOverlay?f=" + data.getFileName();
+	    envLayer.imageMapTypeOptions.setTileUrl(new TileUrlCallBack() {
+			@Override
+			public String getTileUrl(Point point, int zoomLevel) {
+				 String tileUrl = envLayer.baseUrl;
+			    tileUrl += "&x=" + point.getX();
+			    tileUrl += "&y=" + point.getY();
+			    tileUrl += "&z=" + zoomLevel;
+			    return tileUrl;
+			}
+		});
+	    return envLayer;
   }
 
   @Override

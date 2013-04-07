@@ -15,9 +15,10 @@ public class ModelEnvLayer extends AscTileLayer {
   }
 
   public ModelEnvLayer(String ascFilePath, double opacity) {
-    this.setOpacity(opacity);
+	  super();
+    this.imageMapTypeOptions.setOpacity(opacity);
     baseUrl = GWT.getModuleBaseURL() + "ascOverlay?f=" + ascFilePath;
-    setTileUrl(new TileUrlCallBack() {
+    this.imageMapTypeOptions.setTileUrl(new TileUrlCallBack() {
 		
 		@Override
 		public String getTileUrl(Point point,
