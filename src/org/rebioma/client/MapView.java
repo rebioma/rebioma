@@ -69,6 +69,8 @@ import com.google.gwt.maps.client.events.click.ClickMapEvent;
 import com.google.gwt.maps.client.events.click.ClickMapHandler;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapEvent;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapHandler;
+import com.google.gwt.maps.client.events.resize.ResizeMapEvent;
+import com.google.gwt.maps.client.events.resize.ResizeMapHandler;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapEvent;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
 import com.google.gwt.maps.client.overlays.InfoWindow;
@@ -1273,6 +1275,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	  mapOptions.setDraggableCursor("crosshair");
 	  mapOptions.setDraggingCursor("move");
 	  mapOptions.setMapTypeId(DEFAULT_MAP_TYPE);
+	  mapOptions.setScaleControl(true);
 	  MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions.newInstance();
 	  mapTypeControlOptions.setMapTypeIds(new MapTypeId[]{MapTypeId.TERRAIN, MapTypeId.ROADMAP, MapTypeId.SATELLITE});
 	  

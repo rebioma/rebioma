@@ -101,9 +101,9 @@ public class OccurrenceMarkerManager{
 				speciesMarkerUrls.put(species, url);
 			}
 			MarkerImage iconImage = MarkerImage.newInstance(url); 
-			iconImage.setSize(Size.newInstance(20, 34));
-			iconImage.setAnchor(Point.newInstance(9, 34));
-			iconImage.setOrigin(Point.newInstance(9, 2));
+//			iconImage.setSize(Size.newInstance(20, 34));
+//			iconImage.setAnchor(Point.newInstance(9, 34));
+//			iconImage.setOrigin(Point.newInstance(9, 2));
 			options.setIcon(iconImage);
 			//MarkerImage shadow = MarkerImage.newInstance("http://www.google.com/mapfiles/shadow50.png");
 			//shadow.setSize(Size.newInstance(37, 34));
