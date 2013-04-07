@@ -1303,12 +1303,12 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
 	        ControlPosition hideControlPosition = new ControlPosition(
 	            ControlAnchor.TOP_RIGHT, 100, 10);*/
-//	        HideControl hideControl = new HideControl();
-//	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
-//	        envLayerSelector.setMap(map, ControlPosition.TOP_CENTER);
-//	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
+	        HideControl hideControl = new HideControl();
+	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
+	        envLayerSelector.setMap(map, ControlPosition.TOP_CENTER);
+	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
 //	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
-//	        hideControl.addControlWidgetToHide(envLayerSelector);
+	        hideControl.addControlWidgetToHide(envLayerSelector);
 		}
     });
 //   map.addClickHandler(mapClickHandler);

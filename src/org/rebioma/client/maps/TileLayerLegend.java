@@ -30,7 +30,11 @@ public abstract class TileLayerLegend extends HTMLPanel {
 
   public TileLayerLegend() {
 	  super("");
-	  this.add(getLegendWidget());
+  }
+  
+  protected void addLegend(){
+	  Widget legendWidget = getLegendWidget(); 
+	  this.add(legendWidget);
   }
 
   public abstract void lookupValue(LatLng point, LegendCallback callback);

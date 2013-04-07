@@ -49,6 +49,7 @@ public class EnvLayerLegend extends TileLayerLegend {
     img.setUrl(GWT.getModuleBaseURL() + "ascOverlay?legend=1");
     minLabel.setText("" + data.getMinValue());
     maxLabel.setText("" + data.getMaxValue());
+    this.addLegend();
   }
 
   /**
@@ -83,6 +84,7 @@ public class EnvLayerLegend extends TileLayerLegend {
     } else {
       valueHtml.setHTML(value + " " + data.getUnits() + " @ " + pointText);
     }
+    this.setVisible(true);
   }
 
   @Override
