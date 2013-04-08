@@ -25,6 +25,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.maps.client.MapWidget;
+import com.google.gwt.maps.client.controls.ControlPosition;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ListBox;
@@ -73,10 +74,10 @@ public abstract class TileLayerSelector extends ListBox {
       return;
     }
     if (selectedLayer != null) {
-//      map.removeOverlay(selectedLayer.asOverlay());
+    	map.getOverlayMapTypes().removeAt(map.getOverlayMapTypes().getLength() - 1);
     }
     if (layerLegend != null) {
-//      map.removeControl(layerLegend);
+    	layerLegend.removeFromParent();
     }
     setSelectedIndex(selectionNames.get(SELECT));
     selectedLayer = null;
@@ -146,10 +147,10 @@ public abstract class TileLayerSelector extends ListBox {
     }
     LayerInfo layerInfo = null;
     if (selectedLayer != null) {
-//      map.removeOverlay(selectedLayer.asOverlay());
+    	map.getOverlayMapTypes().removeAt(selectedLayer.getMapIndex());
     }
     if (layerLegend != null) {
-//      map.removeControl(layerLegend);
+    	layerLegend.removeFromParent();
     }
     if (layerSelected.equals(SELECT) || layerSelected.equals(CLEAR)) {
       setSelectedIndex(selectionNames.get(SELECT));
@@ -160,10 +161,11 @@ public abstract class TileLayerSelector extends ListBox {
       setSelectedIndex(selectionNames.get(layerSelected));
       layerInfo = layerInfos.get(layerSelected);
       selectedLayer = layerInfo.getInstance();
-//      map.addOverlay(selectedLayer.asOverlay());
+      map.getOverlayMapTypes().push(selectedLayer.asOverlay());
+      selectedLayer.setMapIndex(map.getOverlayMapTypes().getLength() - 1);
       layerLegend = layerInfos.get(layerSelected).getInstance().getLegend();
       if (layerLegend != null) {
-//        map.addControl(layerLegend);
+    	  map.setControls(ControlPosition.BOTTOM_RIGHT, layerLegend);
       }
       callback.onLayerSelected(layerInfo);
     }
