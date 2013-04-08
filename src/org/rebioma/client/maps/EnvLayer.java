@@ -19,6 +19,7 @@ import org.rebioma.client.bean.AscData;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.maps.client.base.Point;
+import com.google.gwt.maps.client.base.Size;
 import com.google.gwt.maps.client.maptypes.TileUrlCallBack;
 
 /**
@@ -65,14 +66,16 @@ public class EnvLayer extends AscTileLayer {
   public static EnvLayer newInstance(AscData data){
 	  final EnvLayer envLayer = new EnvLayer();
 	  envLayer.data = data;
+	  envLayer.imageMapTypeOptions.setTileSize(Size.newInstance(256, 256));
+	  envLayer.imageMapTypeOptions.setOpacity(0.5);
 	  //envLayer.setOpacity(opacity);
 	  envLayer.baseUrl = GWT.getModuleBaseURL() + "ascOverlay?f=" + data.getFileName();
 	    envLayer.imageMapTypeOptions.setTileUrl(new TileUrlCallBack() {
 			@Override
 			public String getTileUrl(Point point, int zoomLevel) {
 				 String tileUrl = envLayer.baseUrl;
-			    tileUrl += "&x=" + point.getX();
-			    tileUrl += "&y=" + point.getY();
+			    tileUrl += "&x=" + new Double(Math.rint(point.getX())).intValue();
+			    tileUrl += "&y=" + new Double(Math.rint(point.getY())).intValue();
 			    tileUrl += "&z=" + zoomLevel;
 			    return tileUrl;
 			}
