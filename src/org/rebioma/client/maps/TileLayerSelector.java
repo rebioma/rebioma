@@ -25,7 +25,11 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.maps.client.MapWidget;
+import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.controls.ControlPosition;
+import com.google.gwt.maps.client.events.tiles.TilesLoadedMapEvent;
+import com.google.gwt.maps.client.events.tiles.TilesLoadedMapHandler;
+import com.google.gwt.maps.client.maptypes.ImageMapType;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.ListBox;
@@ -161,11 +165,12 @@ public abstract class TileLayerSelector extends ListBox {
       setSelectedIndex(selectionNames.get(layerSelected));
       layerInfo = layerInfos.get(layerSelected);
       selectedLayer = layerInfo.getInstance();
-      map.getOverlayMapTypes().push(selectedLayer.asOverlay());
+      ImageMapType overlay = selectedLayer.asOverlay();
+      map.getOverlayMapTypes().push(overlay);
       selectedLayer.setMapIndex(map.getOverlayMapTypes().getLength() - 1);
       layerLegend = layerInfos.get(layerSelected).getInstance().getLegend();
       if (layerLegend != null) {
-    	  map.setControls(ControlPosition.BOTTOM_RIGHT, layerLegend);
+    	  map.setControls(ControlPosition.RIGHT_CENTER, layerLegend);
       }
       callback.onLayerSelected(layerInfo);
     }

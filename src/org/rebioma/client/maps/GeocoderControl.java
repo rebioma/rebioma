@@ -41,12 +41,12 @@ public class GeocoderControl extends FlowPanel {
 	private static MarkerOptions getOptions(LatLng point, String address) {
 		MarkerImage icon = MarkerImage
 				.newInstance("http://www.google.com/mapfiles/arrow.png");
-		icon.setSize(Size.newInstance(39, 34));
-		icon.setAnchor(Point.newInstance(9, 34));
-		icon.setOrigin(Point.newInstance(9, 2));
+//		icon.setSize(Size.newInstance(39, 34));
+//		icon.setAnchor(Point.newInstance(9, 34));
+//		icon.setOrigin(Point.newInstance(9, 2));
 		MarkerImage shadow = MarkerImage
 				.newInstance("http://www.google.com/mapfiles/arrowshadow.png");
-		shadow.setSize(Size.newInstance(39, 34));
+//		shadow.setSize(Size.newInstance(39, 34));
 		MarkerOptions options = MarkerOptions.newInstance();
 		options.setClickable(true);
 		options.setDraggable(false);
@@ -83,7 +83,10 @@ public class GeocoderControl extends FlowPanel {
 		addressBox.selectAll();
 		formElements.add(addressBox);
 		submit = new Button("Find place");
+		formElements.add(submit);
+		
 		submit.addClickHandler(new ClickHandler() {
+			@Override
 			public void onClick(ClickEvent event) {
 				String address = getAddress();
 				if (address == null || address.trim().length() == 0) {
@@ -93,7 +96,6 @@ public class GeocoderControl extends FlowPanel {
 				form.submit();
 			}
 		});
-		formElements.add(submit);
 		formElements.add(new HTML("&nbsp;"));
 		form.add(formElements);
 		form.addSubmitHandler(new SubmitHandler() {

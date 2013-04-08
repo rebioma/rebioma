@@ -34,6 +34,7 @@ import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.EnvLayerSelector;
+import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.ModelEnvLayer;
 import org.rebioma.client.maps.ModelingControl;
@@ -69,13 +70,13 @@ import com.google.gwt.maps.client.events.click.ClickMapEvent;
 import com.google.gwt.maps.client.events.click.ClickMapHandler;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapEvent;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapHandler;
-import com.google.gwt.maps.client.events.resize.ResizeMapEvent;
-import com.google.gwt.maps.client.events.resize.ResizeMapHandler;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapEvent;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
 import com.google.gwt.maps.client.overlays.InfoWindow;
 import com.google.gwt.maps.client.overlays.InfoWindowOptions;
 import com.google.gwt.maps.client.overlays.Marker;
+import com.google.gwt.maps.client.services.GeocoderRequestHandler;
+import com.google.gwt.maps.client.services.GeocoderStatus;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
@@ -619,23 +620,23 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    * event.
    */
   
-//  private final GeocoderControl geocoder = new GeocoderControl(new GeocoderRequestHandler() {
-//	
-//	@Override
-//	public void onCallback(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results, GeocoderStatus status) {
-//			if(GeocoderStatus.OK.equals(status)){
-//				 mapGeocoderResult(results);
-//		         handleHistoryEvent();	
-//			}else if(GeocoderStatus.ZERO_RESULTS.equals(status)){
-//				 Window.confirm("Address not found. Add to the Madagascar Gazeteer?");
-//			}else{ //failure
-//				for(Marker marker: geocoderMarkers){
-//					marker.setMap((MapWidget)null);
-//				}
-//			}
-//		
-//	}
-//});
+  private final GeocoderControl geocoder = new GeocoderControl(new GeocoderRequestHandler() {
+	
+	@Override
+	public void onCallback(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results, GeocoderStatus status) {
+			if(GeocoderStatus.OK.equals(status)){
+				 mapGeocoderResult(results);
+		         handleHistoryEvent();	
+			}else if(GeocoderStatus.ZERO_RESULTS.equals(status)){
+				 Window.confirm("Address not found. Add to the Madagascar Gazeteer?");
+			}else{ //failure
+				for(Marker marker: geocoderMarkers){
+					marker.setMap((MapWidget)null);
+				}
+			}
+		
+	}
+});
 //  private final GeocoderControl geocoder = new GeocoderControl(
 //      new LatLngCallback() {
 //        public void onFailure() {
@@ -689,12 +690,11 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
   private final ClickMapHandler mapClickHandler = new ClickMapHandler() {
 	@Override
 	public void onEvent(ClickMapEvent event) {
-//		if (envLayerInfo != null && event.getSource() instanceof == null) {
-//	        LatLng point = event.getLatLng();
-//	        TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
-//	        legend.lookupValue(point, envLegendCallback);
-//	      }
-		new AlertMessageBox("Clickmap", event.getMouseEvent().getLatLng().getToUrlValue(7));
+		if (envLayerInfo != null) {
+	        LatLng point = event.getMouseEvent().getLatLng();
+	        TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
+	        legend.lookupValue(point, envLegendCallback);
+	    }
 	}
   };
 
@@ -1100,38 +1100,38 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
   }
 
   protected void mapGeocoderResult(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results) {
-//    String address = geocoder.getAddress();
-//    StringBuilder sb = new StringBuilder();
-//    LatLng point = null;
-//    for(int i=0;i< results.length();i++){
-//    	com.google.gwt.maps.client.services.GeocoderResult geoResult = results.get(i);
-//    	point = geoResult.getGeometry().getLocation();
-//    	MapGeocoderResult result = new MapGeocoderResult(point, address);
-//    	sb.append(result);
-//    	InfoWindowOptions contentOptions = InfoWindowOptions.newInstance();
-//    	contentOptions.setContent(result);
-//    	contentOptions.setPosition(point);
-//    	final InfoWindow content = InfoWindow.newInstance(contentOptions);
-//        if (geocoderMarkers != null) {
-//        	for(Marker marker: geocoderMarkers){
-//        		marker.setMap((MapWidget)null);
-//        	}
-//        }
-//        Marker geocoderMarker = GeocoderControl.createMarker(point, address);
-//        geocoderMarker.setMap(map);
-//        geocoderMarker.addClickHandler(new ClickMapHandler() {
-//			@Override
-//			public void onEvent(ClickMapEvent event) {
-//				closeInfoWindows();
-//				 content.open(map);
-//				infoWindows.add(content);
-//			}
-//		});
-//        geocoderMarkers.add(geocoderMarker);
-//    }
-//    if(results.length() == 1 && point != null){
-//    	map.setCenter(point);
-//    }
+    String address = geocoder.getAddress();
+    StringBuilder sb = new StringBuilder();
+    LatLng point = null;
+    for(int i=0;i< results.length();i++){
+    	com.google.gwt.maps.client.services.GeocoderResult geoResult = results.get(i);
+    	point = geoResult.getGeometry().getLocation();
+    	MapGeocoderResult result = new MapGeocoderResult(point, address);
+    	sb.append(result);
+    	InfoWindowOptions contentOptions = InfoWindowOptions.newInstance();
+    	contentOptions.setContent(result);
+    	contentOptions.setPosition(point);
+    	final InfoWindow content = InfoWindow.newInstance(contentOptions);
+        if (geocoderMarkers != null) {
+        	for(Marker marker: geocoderMarkers){
+        		marker.setMap((MapWidget)null);
+        	}
+        }
+        Marker geocoderMarker = GeocoderControl.createMarker(point, address);
+        geocoderMarker.setMap(map);
+        geocoderMarker.addClickHandler(new ClickMapHandler() {
+			@Override
+			public void onEvent(ClickMapEvent event) {
+				closeInfoWindows();
+				 content.open(map);
+				infoWindows.add(content);
+			}
+		});
+        geocoderMarkers.add(geocoderMarker);
+    }
+    if(results.length() == 1 && point != null){
+    	map.setCenter(point);
+    }
   }
 
   protected void resetToDefaultState() {
@@ -1176,7 +1176,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
         HideControl hideControl = new HideControl();
         map.setControls(ControlPosition.TOP_RIGHT, hideControl);
         hideControl.addControlWidgetToHide(modelControl);
-//        hideControl.addControlWidgetToHide(geocoder);
+        hideControl.addControlWidgetToHide(geocoder);
         hideControl.addControlWidgetToHide(envLayerSelector);
       }
     });
@@ -1198,12 +1198,12 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       query += map.getCenter().getToUrlValue(7);
       break;
     case ADDRESS:
-//      String address = geocoder.getAddress();
-//      if ((address != null) && (address.length() > 0)) {
-//        query += geocoder.getAddress();
-//      } else {
-//        query = "";
-//      }
+      String address = geocoder.getAddress();
+      if ((address != null) && (address.length() > 0)) {
+        query += geocoder.getAddress();
+      } else {
+        query = "";
+      }
       break;
     case LEFT_TAB:
       int index = leftTab.getTabBar().getSelectedTab();
@@ -1293,8 +1293,9 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     Scheduler.get().scheduleDeferred(new ScheduledCommand(){
 		@Override
 		public void execute() {
-			
-//			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
+	        HideControl hideControl = new HideControl();
+	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
+			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
 	        /*ScaleControl scaleControl = new ScaleControl();
 	        LargeMapControl largeMapControl = new LargeMapControl();
 	        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
@@ -1305,11 +1306,8 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
 	        ControlPosition hideControlPosition = new ControlPosition(
 	            ControlAnchor.TOP_RIGHT, 100, 10);*/
-	        HideControl hideControl = new HideControl();
-	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
-	        envLayerSelector.setMap(map, ControlPosition.TOP_CENTER);
-	        map.setControls(ControlPosition.TOP_RIGHT, envLayerSelector);
-//	        hideControl.addControlWidgetToHide(geocoder.getControlWidget());
+	        envLayerSelector.setMap(map, ControlPosition.TOP_RIGHT);
+	        hideControl.addControlWidgetToHide(geocoder);
 	        hideControl.addControlWidgetToHide(envLayerSelector);
 		}
     });
