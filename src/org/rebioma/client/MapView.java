@@ -1036,10 +1036,16 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    */
 
   protected void handleOnValueChange(String historyToken) {
+	  
     GWT.log(this.getClass() + " -- onHistoryChanged(): " + historyToken, null);
     if (historyToken.length() > 0) {
       isHistoryChanging = true;
       historyState.setHistoryToken(historyToken);
+
+//      MapTypeId mapType = getMapType(historyState
+//          .getHistoryParameters(UrlParam.MAP_TYPE)
+//          + "");
+//      map.setMapTypeId(DEFAULT_MAP_TYPE);
       int zoomLv = (Integer) historyState.getHistoryParameters(UrlParam.ZOOM);
       map.setZoom(zoomLv == HistoryState.UNDEFINED ? DEFAULT_ZOOM
               : zoomLv);
@@ -1051,40 +1057,36 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 //          .getHistoryParameters(UrlParam.ADDRESS)
 //          + "");
 
-      int layerIndex = (Integer) historyState
-          .getHistoryParameters(UrlParam.LAYER);
-      if (layerIndex == HistoryState.UNDEFINED) {
-        envLayerSelector.clearSelection();
-        envLayerInfo = null;
-      } else {
-        envLayerInfo = envLayerSelector.selectLayer(layerIndex);
-        if (envLayerInfo != null) {
-          LatLng point = (LatLng) historyState
-              .getHistoryParameters(UrlParam.LOOKUP_POINT);
-          String value = historyState
-              .getHistoryParameters(UrlParam.LOOKUP_VALUE)
-              + "";
-          TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
-          legend.setDisplay(point, value);
-        }
-      }
-      MapTypeId mapType = getMapType(historyState
-          .getHistoryParameters(UrlParam.MAP_TYPE)
-          + "");
-      map.setMapTypeId(mapType);
-      Integer leftTabIndex = (Integer) historyState
-          .getHistoryParameters(UrlParam.LEFT_TAB);
-      if (leftTabIndex == null || leftTabIndex < 0) {
-        leftTabIndex = 0;
-      }
-      leftTab.selectTab(leftTabIndex);
-      String modelSearchTerm = historyState.getHistoryParameters(
-          UrlParam.M_SEARCH).toString();
-      Integer modelSearchPage = (Integer) historyState
-          .getHistoryParameters(UrlParam.M_PAGE);
-      modelSearch.setPage(modelSearchPage);
-      modelSearch.search(modelSearchTerm);
-      historyState.parseCheckedUrl();
+//      int layerIndex = (Integer) historyState
+//          .getHistoryParameters(UrlParam.LAYER);
+//      if (layerIndex == HistoryState.UNDEFINED) {
+//        envLayerSelector.clearSelection();
+//        envLayerInfo = null;
+//      } else {
+//        envLayerInfo = envLayerSelector.selectLayer(layerIndex);
+//        if (envLayerInfo != null) {
+//          LatLng point = (LatLng) historyState
+//              .getHistoryParameters(UrlParam.LOOKUP_POINT);
+//          String value = historyState
+//              .getHistoryParameters(UrlParam.LOOKUP_VALUE)
+//              + "";
+//          TileLayerLegend legend = envLayerInfo.getInstance().getLegend();
+//          legend.setDisplay(point, value);
+//        }
+//      }
+//      Integer leftTabIndex = (Integer) historyState
+//          .getHistoryParameters(UrlParam.LEFT_TAB);
+//      if (leftTabIndex == null || leftTabIndex < 0) {
+//        leftTabIndex = 0;
+//      }
+//      leftTab.selectTab(leftTabIndex);
+//      String modelSearchTerm = historyState.getHistoryParameters(
+//          UrlParam.M_SEARCH).toString();
+//      Integer modelSearchPage = (Integer) historyState
+//          .getHistoryParameters(UrlParam.M_PAGE);
+//      modelSearch.setPage(modelSearchPage);
+//      modelSearch.search(modelSearchTerm);
+//      historyState.parseCheckedUrl();
       isHistoryChanging = false;
     }
 
@@ -1311,9 +1313,9 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	        hideControl.addControlWidgetToHide(envLayerSelector);
 		}
     });
-//   map.addClickHandler(mapClickHandler);
-//   map.addZoomChangeHandler(mapZoomHandler);
-//   map.addMapTypeIdChangeHandler(mapTypeHandler);
+   map.addClickHandler(mapClickHandler);
+   map.addZoomChangeHandler(mapZoomHandler);
+   map.addMapTypeIdChangeHandler(mapTypeHandler);
 //    map.checkResizeAndCenter();
   }
   
