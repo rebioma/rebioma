@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.Icon;
-
 import org.form.client.api.table.StaticTable;
 import org.rebioma.client.DataPager.PageListener;
 import org.rebioma.client.OccurrenceQuery.DataRequestListener;
@@ -20,7 +18,6 @@ import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.bean.User;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -41,18 +38,15 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.maps.client.MapOptions;
 import com.google.gwt.maps.client.MapTypeId;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
-import com.google.gwt.maps.client.events.drag.DragMapEvent;
+import com.google.gwt.maps.client.controls.MapTypeControlOptions;
 import com.google.gwt.maps.client.events.drag.DragMapHandler;
-import com.google.gwt.maps.client.events.dragend.DragEndMapHandler;
-import com.google.gwt.maps.client.maptypes.ImageMapType;
-import com.google.gwt.maps.client.maptypes.MapType;
-import com.google.gwt.maps.client.mvc.MVCArrayCallback;
+import com.google.gwt.maps.client.maptypes.MapTypeRegistry;
 import com.google.gwt.maps.client.overlays.Marker;
+import com.google.gwt.maps.client.overlays.MarkerImage;
 import com.google.gwt.maps.client.overlays.MarkerOptions;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.History;
@@ -1451,13 +1445,31 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 			MapOptions options = MapOptions.newInstance();
 			options.setCenter(CENTER);
 			options.setZoom(6);
+			options.setMapTypeId(MapTypeId.TERRAIN);
+			options.setScaleControl(true);
+//			options.setDraggableCursor("crosshair");
+//			options.setDraggingCursor("move");
+			MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions.newInstance();
+			  mapTypeControlOptions.setMapTypeIds(MapTypeId.values());
+			  options.setMapTypeControlOptions(mapTypeControlOptions);
+			  options.setMapTypeControl(true);
 			map = new MapWidget(options);
+//			MapTypeRegistry registry = MapTypeRegistry.newInstance();
+//			registry.set(MapTypeId.HYBRID.toString(), MapTypeId.HYBRID);
+//			registry.set(MapTypeId.ROADMAP.toString(), MapTypeId.ROADMAP);
+//			registry.set(MapTypeId.TERRAIN.toString(), MapTypeId.TERRAIN);
+//			registry.set(MapTypeId.SATELLITE.toString(), MapTypeId.SATELLITE);
+//			map.setMapTypesRegistry(registry);
+//		    map.setWidth("100%");
+//		    map.setHeight("100%");
 			initMap();
-			initWidget(map);
 			map.setStyleName(SMALL_MAP_STYLE);
+			initWidget(map);
 			MarkerOptions markerOptions = MarkerOptions.newInstance();
-			markerOptions.setDraggable(true);
-			markerOptions.setPosition(LatLng.newInstance(-91, -91));
+			MarkerImage icon = MarkerImage.newInstance(DEFAULT_MARKER_ICON);
+			markerOptions.setIcon(icon);
+			markerOptions.setDraggable(false);
+			markerOptions.setPosition(CENTER);
 			marker = Marker.newInstance(markerOptions);
 //			marker.addDragHandler(this);
 //			marker.addDragEndHandler(this);
@@ -1513,8 +1525,13 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		 * Sets center of this map to Madagascar.
 		 */
 		public void setCenter() {
-			map.setOverlayMapTypes(null);
+			//map.setOverlayMapTypes(null);
 			map.setCenter(CENTER);
+		}
+		
+		public void setCenter(LatLng center){
+			map.setCenter(center);
+			marker.setPosition(center);
 		}
 
 		/**
@@ -1526,10 +1543,14 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		 *            double longitude of the marker
 		 */
 		public void setMarker(LatLng latLng) {
+			MarkerImage icon = MarkerImage.newInstance(DEFAULT_MARKER_ICON);
+//			MarkerImage shadow = MarkerImage.newInstance(DEFAULT_MARKER_SHADOW_URL);
+			marker.setIcon(icon);
+//			marker.setShadow(shadow);
+//			marker.getIcon_MarkerImage().setUrl(DEFAULT_MARKER_ICON);
+//			marker.getShadow_MarkerImage().setUrl(DEFAULT_MARKER_SHADOW_URL);
+//			map.setOverlayMapTypes(null);
 			marker.setPosition(latLng);
-			marker.getIcon_MarkerImage().setUrl(DEFAULT_MARKER_ICON);
-			marker.getShadow_MarkerImage().setUrl(DEFAULT_MARKER_SHADOW_URL);
-			map.setOverlayMapTypes(null);
 			marker.setMap(map);
 			map.setCenter(latLng);
 			map.setZoom(10);
@@ -1546,9 +1567,11 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		 * it.
 		 */
 		private void initMap() {
+
+			  
 			// map.addControl(new SmallMapControl());
 			// map.addControl(new MapTypeControl(true));
-			map.setMapTypeId(MapTypeId.TERRAIN);
+//			map.setMapTypeId(MapTypeId.TERRAIN);
 			// map.setScrollWheelZoomEnabled(true);
 			// map.setPixelSize(MAP_WIDTH, MAP_HEIGHT);
 		}
@@ -3952,7 +3975,8 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		if (!isInBound()) {
 			smallMap.setCenter();
 		} else {
-			smallMap.setMarker(LatLng.newInstance(newLat, newLng));
+			LatLng point = LatLng.newInstance(newLat, newLng);
+			smallMap.setMarker(point);
 		}
 	}
 
