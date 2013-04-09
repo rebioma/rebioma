@@ -170,7 +170,7 @@ public abstract class TileLayerSelector extends ListBox {
       selectedLayer.setMapIndex(map.getOverlayMapTypes().getLength() - 1);
       layerLegend = layerInfos.get(layerSelected).getInstance().getLegend();
       if (layerLegend != null) {
-    	  map.setControls(ControlPosition.RIGHT_CENTER, layerLegend);
+    	  map.setControls(ControlPosition.RIGHT_BOTTOM, layerLegend);
       }
       callback.onLayerSelected(layerInfo);
     }
@@ -187,9 +187,9 @@ public abstract class TileLayerSelector extends ListBox {
    * @param position
    * @return
    */
-  public void setMap(final MapWidget map, com.google.gwt.maps.client.controls.ControlPosition position) {
+  public void setMap(final MapWidget map /*, com.google.gwt.maps.client.controls.ControlPosition position*/) {
     this.map = map;
-    map.setControls(position, this);
+//    map.setControls(position, this);
     addItem(LOADING);
     loadLayers(new AsyncCallback<List<LayerInfo>>() {
       public void onFailure(Throwable caught) {

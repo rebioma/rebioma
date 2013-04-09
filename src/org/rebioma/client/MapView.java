@@ -36,6 +36,7 @@ import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.EnvLayerSelector;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
+import org.rebioma.client.maps.MapControlsGroup;
 import org.rebioma.client.maps.ModelEnvLayer;
 import org.rebioma.client.maps.ModelingControl;
 import org.rebioma.client.maps.OccurrenceMarkerManager;
@@ -102,7 +103,7 @@ import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
  */
 public class MapView extends ComponentView implements CheckedSelectionListener,
     DataRequestListener, PageClickListener, PageListener<Occurrence>,
-    TileLayerCallback, ItemSelectionListener, SelectionHandler<Integer>, OccurrencePageSizeChangeHandler {
+    TileLayerCallback, ItemSelectionListener, SelectionHandler<Integer>, OccurrencePageSizeChangeHandler, GeocoderRequestHandler {
 
   /**
    * Manage history states of map View.
@@ -620,47 +621,15 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    * event.
    */
   
-  private final GeocoderControl geocoder = new GeocoderControl(new GeocoderRequestHandler() {
-	
-	@Override
-	public void onCallback(JsArray<com.google.gwt.maps.client.services.GeocoderResult> results, GeocoderStatus status) {
-			if(GeocoderStatus.OK.equals(status)){
-				 mapGeocoderResult(results);
-		         handleHistoryEvent();	
-			}else if(GeocoderStatus.ZERO_RESULTS.equals(status)){
-				 Window.confirm("Address not found. Add to the Madagascar Gazeteer?");
-			}else{ //failure
-				for(Marker marker: geocoderMarkers){
-					marker.setMap((MapWidget)null);
-				}
-			}
-		
-	}
-});
-//  private final GeocoderControl geocoder = new GeocoderControl(
-//      new LatLngCallback() {
-//        public void onFailure() {
-//          if (geocoderMarker != null) {
-//            map.removeOverlay(geocoderMarker);
-//          }
-//          String address = geocoder.getAddress();
-//          if ((address != null) && (address.trim().length() > 0)) {
-//            Window
-//                .confirm("Address not found. Add to the Madagascar Gazeteer?");
-//          }
-//        }
-//
-//        public void onSuccess(LatLng point) {
-//          mapGeocoderResult(point);
-//          handleHistoryEvent();
-//        }
-//      });
+  private final GeocoderControl geocoder;
 
   /**
    * The list box on the map that allows users to overlay environmental layers
    * on the Google map.
    */
   private final TileLayerSelector envLayerSelector;
+  
+  private final MapControlsGroup controlsGroup;
 
   /**
    * The environmental layer on the Google map that is currently visible.
@@ -794,8 +763,9 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
       }
 
     };
-
-    envLayerSelector = new EnvLayerSelector(this);
+    this.controlsGroup = new MapControlsGroup(this, this);
+    envLayerSelector = controlsGroup.getLayerSelector();
+    geocoder = controlsGroup.getGeocoder();
     initMap();
     modelSearch = new ModelSearch();
     leftTab = new TabPanel();
@@ -1295,7 +1265,8 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		public void execute() {
 	        HideControl hideControl = new HideControl();
 	        map.setControls(ControlPosition.TOP_RIGHT, hideControl);
-			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
+	        controlsGroup.setMap(map, ControlPosition.RIGHT_TOP);
+//			 map.setControls(ControlPosition.TOP_RIGHT, geocoder);
 	        /*ScaleControl scaleControl = new ScaleControl();
 	        LargeMapControl largeMapControl = new LargeMapControl();
 	        MenuMapTypeControl mapTypeControl = new MenuMapTypeControl();
@@ -1306,7 +1277,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 
 	        ControlPosition hideControlPosition = new ControlPosition(
 	            ControlAnchor.TOP_RIGHT, 100, 10);*/
-	        envLayerSelector.setMap(map, ControlPosition.TOP_RIGHT);
+//	        envLayerSelector.setMap(map, ControlPosition.TOP_RIGHT);
 	        hideControl.addControlWidgetToHide(geocoder);
 	        hideControl.addControlWidgetToHide(envLayerSelector);
 		}
@@ -1392,5 +1363,21 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	@Override
 	public OccurrencePagerWidget getOccurrencePagerWidget() {
 		return pager;
+	}
+
+	@Override
+	public void onCallback(
+			JsArray<com.google.gwt.maps.client.services.GeocoderResult> results,
+			GeocoderStatus status) {
+		if(GeocoderStatus.OK.equals(status)){
+			 mapGeocoderResult(results);
+	         handleHistoryEvent();	
+		}else if(GeocoderStatus.ZERO_RESULTS.equals(status)){
+			 Window.confirm("Address not found. Add to the Madagascar Gazeteer?");
+		}else{ //failure
+			for(Marker marker: geocoderMarkers){
+				marker.setMap((MapWidget)null);
+			}
+		}
 	}
 }

@@ -96,7 +96,7 @@ public class GeocoderControl extends FlowPanel {
 				form.submit();
 			}
 		});
-		formElements.add(new HTML("&nbsp;"));
+//		formElements.add(new HTML("&nbsp;"));
 		form.add(formElements);
 		form.addSubmitHandler(new SubmitHandler() {
 			public void onSubmit(SubmitEvent event) {
