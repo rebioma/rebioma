@@ -33,7 +33,6 @@ import org.rebioma.client.bean.AscModel;
 import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
-import org.rebioma.client.maps.EnvLayerSelector;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.MapControlsGroup;
@@ -95,7 +94,6 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 
 /**
  * A type of view that shows a Google map displaying pageable occurrence data
@@ -1249,8 +1247,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	  mapOptions.setMapTypeId(DEFAULT_MAP_TYPE);
 	  mapOptions.setScaleControl(true);
 	  MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions.newInstance();
-	  mapTypeControlOptions.setMapTypeIds(new MapTypeId[]{MapTypeId.TERRAIN, MapTypeId.ROADMAP, MapTypeId.SATELLITE});
-	  
+	  mapTypeControlOptions.setMapTypeIds(MapTypeId.values());
 	  mapTypesMap.put(MapTypeId.TERRAIN.toString(), MapTypeId.TERRAIN);
 	  mapTypesMap.put(MapTypeId.ROADMAP.toString(), MapTypeId.ROADMAP);
 	  mapTypesMap.put(MapTypeId.SATELLITE.toString(), MapTypeId.SATELLITE);
