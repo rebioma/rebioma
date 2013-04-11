@@ -35,16 +35,20 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.maps.client.MapOptions;
 import com.google.gwt.maps.client.MapTypeId;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.controls.MapTypeControlOptions;
+import com.google.gwt.maps.client.events.drag.DragMapEvent;
 import com.google.gwt.maps.client.events.drag.DragMapHandler;
-import com.google.gwt.maps.client.maptypes.MapTypeRegistry;
+import com.google.gwt.maps.client.events.dragend.DragEndMapEvent;
+import com.google.gwt.maps.client.events.dragend.DragEndMapHandler;
 import com.google.gwt.maps.client.overlays.Marker;
 import com.google.gwt.maps.client.overlays.MarkerImage;
 import com.google.gwt.maps.client.overlays.MarkerOptions;
@@ -55,6 +59,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -1431,12 +1436,10 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 	 * 
 	 * 
 	 */
-	private class SmallMap extends Composite{
+	private class SmallMap extends Composite {
 
 		private final MapWidget map;
 		private Marker marker = null;
-
-		private DragMapHandler dragMapHander;
 
 		/**
 		 * Initializes smalll map and center it at Madagascar.
@@ -1447,91 +1450,49 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 			options.setZoom(6);
 			options.setMapTypeId(MapTypeId.TERRAIN);
 			options.setScaleControl(true);
-//			options.setDraggableCursor("crosshair");
-//			options.setDraggingCursor("move");
-			MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions.newInstance();
-			  mapTypeControlOptions.setMapTypeIds(MapTypeId.values());
-			  options.setMapTypeControlOptions(mapTypeControlOptions);
-			  options.setMapTypeControl(true);
+			// options.setDraggableCursor("crosshair");
+			// options.setDraggingCursor("move");
+			MapTypeControlOptions mapTypeControlOptions = MapTypeControlOptions
+					.newInstance();
+			mapTypeControlOptions.setMapTypeIds(MapTypeId.values());
+			options.setMapTypeControlOptions(mapTypeControlOptions);
+			options.setMapTypeControl(true);
 			map = new MapWidget(options);
-//			MapTypeRegistry registry = MapTypeRegistry.newInstance();
-//			registry.set(MapTypeId.HYBRID.toString(), MapTypeId.HYBRID);
-//			registry.set(MapTypeId.ROADMAP.toString(), MapTypeId.ROADMAP);
-//			registry.set(MapTypeId.TERRAIN.toString(), MapTypeId.TERRAIN);
-//			registry.set(MapTypeId.SATELLITE.toString(), MapTypeId.SATELLITE);
-//			map.setMapTypesRegistry(registry);
-//		    map.setWidth("100%");
-//		    map.setHeight("100%");
-			initMap();
+//			 MapTypeRegistry registry = MapTypeRegistry.newInstance();
+//			 registry.set(MapTypeId.HYBRID.toString(), MapTypeId.HYBRID);
+//			 registry.set(MapTypeId.ROADMAP.toString(), MapTypeId.ROADMAP);
+//			 registry.set(MapTypeId.TERRAIN.toString(), MapTypeId.TERRAIN);
+//			 registry.set(MapTypeId.SATELLITE.toString(),
+//			 MapTypeId.SATELLITE);
+//			 map.setMapTypesRegistry(registry);
+//			 map.setWidth("100%");
+//			 map.setHeight("100%");
+			// initMap();
 			map.setStyleName(SMALL_MAP_STYLE);
 			initWidget(map);
-			MarkerOptions markerOptions = MarkerOptions.newInstance();
-			MarkerImage icon = MarkerImage.newInstance(DEFAULT_MARKER_ICON);
-			markerOptions.setIcon(icon);
-			markerOptions.setDraggable(false);
-			markerOptions.setPosition(CENTER);
-			marker = Marker.newInstance(markerOptions);
-//			marker.addDragHandler(this);
-//			marker.addDragEndHandler(this);
-//			dragMapHander = new DragMapHandler() {
-//
-//				@Override
-//				public void onEvent(DragMapEvent event) {
-//					FieldEditor latEditor = requiredItems
-//							.getEditor(FieldConstants.DECIMAL_LATITUDE);
-//					FieldEditor lngEditor = requiredItems
-//							.getEditor(FieldConstants.DECIMAL_LONGITUDE);
-//					event.getSource();
-//					if (event.getSource() instanceof Marker) {
-//
-//						LatLng latlng = event.getSender().getLatLng();
-//						NumberFormat numberFormat = NumberFormat
-//								.getFormat("#.0000000#");
-//						latEditor.setValue(numberFormat.format(latlng
-//								.getLatitude()));
-//						lngEditor.setValue(numberFormat.format(latlng
-//								.getLongitude()));
-//					}
-//					// marker.setLatLng(latlng);
-//
-//				}
-//			};
+			Scheduler.get().scheduleDeferred(new ScheduledCommand(){
+			      public void execute() {
+			    	  /*
+			    	   * Forcer le rechargement de la carte.
+			    	   * Sans cette partie de code, il faut redimentionner manuellement le navigateur pour avoir un map complet
+			    	   */
+			    	  map.triggerResize();
+						map.setZoom(map.getZoom());
+				    	  map.triggerResize();
+						setCenter();
+			      }
+			});
 		}
-
-		// public void onDrag(MarkerDragEvent event) {
-		// FieldEditor latEditor = requiredItems
-		// .getEditor(FieldConstants.DECIMAL_LATITUDE);
-		// FieldEditor lngEditor = requiredItems
-		// .getEditor(FieldConstants.DECIMAL_LONGITUDE);
-		// LatLng latlng = event.getSender().getLatLng();
-		// NumberFormat numberFormat = NumberFormat.getFormat("#.0000000#");
-		// latEditor.setValue(numberFormat.format(latlng.getLatitude()));
-		// lngEditor.setValue(numberFormat.format(latlng.getLongitude()));
-		// // marker.setLatLng(latlng);
-		//
-		// }
-		//
-		// public void onDragEnd(MarkerDragEndEvent event) {
-		// FieldEditor latEditor = requiredItems
-		// .getEditor(FieldConstants.DECIMAL_LATITUDE);
-		// FieldEditor lngEditor = requiredItems
-		// .getEditor(FieldConstants.DECIMAL_LONGITUDE);
-		// latEditor.setNewValue();
-		// lngEditor.setNewValue();
-		//
-		// }
 
 		/**
 		 * Sets center of this map to Madagascar.
 		 */
 		public void setCenter() {
-			//map.setOverlayMapTypes(null);
-			map.setCenter(CENTER);
-		}
-		
-		public void setCenter(LatLng center){
-			map.setCenter(center);
-			marker.setPosition(center);
+			// map.setOverlayMapTypes(null);
+			if (map.getOverlayMapTypes() != null) {
+				map.getOverlayMapTypes().clear();
+			}
+			setMarker(CENTER);
 		}
 
 		/**
@@ -1543,22 +1504,58 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		 *            double longitude of the marker
 		 */
 		public void setMarker(LatLng latLng) {
-			MarkerImage icon = MarkerImage.newInstance(DEFAULT_MARKER_ICON);
-//			MarkerImage shadow = MarkerImage.newInstance(DEFAULT_MARKER_SHADOW_URL);
-			marker.setIcon(icon);
-//			marker.setShadow(shadow);
-//			marker.getIcon_MarkerImage().setUrl(DEFAULT_MARKER_ICON);
-//			marker.getShadow_MarkerImage().setUrl(DEFAULT_MARKER_SHADOW_URL);
-//			map.setOverlayMapTypes(null);
+			if (marker == null) {
+				MarkerOptions markerOptions = MarkerOptions.newInstance();
+				MarkerImage icon = MarkerImage.newInstance(DEFAULT_MARKER_ICON);
+				markerOptions.setIcon(icon);
+				markerOptions.setDraggable(true);
+				markerOptions.setPosition(latLng);
+				marker = Marker.newInstance(markerOptions);
+				marker.setDraggable(false);
+				marker.addDragHandler(new DragMapHandler() {
+					@Override
+					public void onEvent(DragMapEvent event) {
+						FieldEditor latEditor = requiredItems
+								.getEditor(FieldConstants.DECIMAL_LATITUDE);
+						FieldEditor lngEditor = requiredItems
+								.getEditor(FieldConstants.DECIMAL_LONGITUDE);
+						LatLng latlng = marker.getPosition();
+						NumberFormat numberFormat = NumberFormat
+								.getFormat("#.0000000#");
+						latEditor.setValue(numberFormat.format(latlng.getLatitude()));
+						lngEditor.setValue(numberFormat.format(latlng
+								.getLongitude()));
+					}
+				});
+				marker.addDragEndHandler(new DragEndMapHandler() {
+					@Override
+					public void onEvent(DragEndMapEvent event) {
+						FieldEditor latEditor = requiredItems
+								.getEditor(FieldConstants.DECIMAL_LATITUDE);
+						FieldEditor lngEditor = requiredItems
+								.getEditor(FieldConstants.DECIMAL_LONGITUDE);
+						latEditor.setNewValue();
+						lngEditor.setNewValue();
+
+					}
+				});
+				// MarkerImage shadow =
+				// MarkerImage.newInstance(DEFAULT_MARKER_SHADOW_URL);
+				marker.setIcon(icon);
+			}
+			// marker.setShadow(shadow);
+			// marker.getIcon_MarkerImage().setUrl(DEFAULT_MARKER_ICON);
+			// marker.getShadow_MarkerImage().setUrl(DEFAULT_MARKER_SHADOW_URL);
+			// map.setOverlayMapTypes(null);
 			marker.setPosition(latLng);
 			marker.setMap(map);
-			map.setCenter(latLng);
 			map.setZoom(10);
+			map.setCenter(latLng);
 		}
 
 		public void setMarkerDragEnabled(boolean enabled) {
 			if (marker != null) {
-				marker.setDraggable(true);
+				marker.setDraggable(enabled);
 			}
 		}
 
@@ -1567,11 +1564,9 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		 * it.
 		 */
 		private void initMap() {
-
-			  
 			// map.addControl(new SmallMapControl());
 			// map.addControl(new MapTypeControl(true));
-//			map.setMapTypeId(MapTypeId.TERRAIN);
+			// map.setMapTypeId(MapTypeId.TERRAIN);
 			// map.setScrollWheelZoomEnabled(true);
 			// map.setPixelSize(MAP_WIDTH, MAP_HEIGHT);
 		}
@@ -1723,6 +1718,8 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 	private static final String REQUIRED_FIELDS = constants.RequiredFields();
 
 	private static final String SMALL_MAP_STYLE = "Small-Map";
+	private static final int SMALL_MAP_WIDTH = 300;
+	private static final int SMALL_MAP_HEIGHT = 300;
 
 	/**
 	 * Taxonomy Authority field.
@@ -2158,6 +2155,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 			occLinks.add(occLink);
 		}
 		addHistoryItem(false);
+
 	}
 
 	/**
