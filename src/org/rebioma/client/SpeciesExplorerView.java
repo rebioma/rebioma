@@ -10,6 +10,8 @@ import org.rebioma.client.OccurrenceQuery.ResultFilter;
 import org.rebioma.client.bean.SpeciesTreeModel;
 import org.rebioma.client.bean.User;
 import org.rebioma.client.gxt.treegrid.SpeciesExplorerPanel;
+import org.rebioma.client.gxt.treegrid.SpeciesMoreInformationDialog;
+import org.rebioma.client.gxt.treegrid.SpeciesStatistiqueDialog;
 import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
@@ -21,8 +23,8 @@ import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.user.client.Command;
-import com.google.gwt.user.client.DeferredCommand;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -41,6 +43,14 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 	private final Button searchButton;
 	
 	private final Button uncheckAllButton;
+	
+	private final Button showStatistiqueButton;
+	
+	private final Button moreInformationButton;
+	
+	private final SpeciesStatistiqueDialog speciesStatistiqueDialog; 
+	
+	private final SpeciesMoreInformationDialog speciesMoreInformationDialog;
 	
 	final Map<String, Integer> typeIndexMap = new HashMap<String, Integer>();
 	
@@ -83,8 +93,14 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		final Label searchLabel = new Label(" " + constants.Search() + " ");
 		searchLabel.setStyleName("searchLabel");
 		searchButton = new Button(constants.Search());
-		uncheckAllButton = new Button("Clear all selected");
-
+		uncheckAllButton = new Button(constants.ClearAllSelected());
+		showStatistiqueButton = new Button(constants.ShowStatistic());
+		showStatistiqueButton.setStyleName("btn-right", true);
+		showStatistiqueButton.setEnabled(false);
+		
+		moreInformationButton = new Button(constants.MoreInformations());
+		moreInformationButton.setStyleName("btn-right", true);
+		moreInformationButton.setEnabled(false);
 		resultFilterLb.addItem(constants.Both(), "both");
 		resultFilterLb.addItem(constants.Public(), "public");
 		resultFilterLb.addItem(constants.Private(), "private");
@@ -119,9 +135,13 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		searchTypeBox.setStyleName("TypeBox");
 		sharedListBox.setStyleName("SharedListBox");
 		resultFilterLb.setStyleName("ResultFilter");
+		speciesStatistiqueDialog = new SpeciesStatistiqueDialog();
+		speciesMoreInformationDialog = new SpeciesMoreInformationDialog();
 		
 		searchButton.addClickHandler(this);
 		uncheckAllButton.addClickHandler(this);
+		showStatistiqueButton.addClickHandler(this);
+		moreInformationButton.addClickHandler(this);
 		searchTypeBox.addChangeHandler(this);
 		resultFilterLb.addChangeHandler(this);
 		mainHp = new FlowPanel();
@@ -129,6 +149,8 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		mainHp.add(searchTypeBox);
 		mainHp.add(searchButton);
 		mainHp.add(uncheckAllButton);
+		mainHp.add(showStatistiqueButton);
+		mainHp.add(moreInformationButton);
 		//initWidget(mainHp);
 		mainHp.setStyleName("Search-Form");
 		updateTaxonomieLink.addClickHandler(this);
@@ -146,6 +168,13 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		verticalPanel.setCellHeight(toolHp, "25px");
 		speciesExplorerPanel = new SpeciesExplorerPanel(); 
 	    verticalPanel.add(speciesExplorerPanel.getTreeGrid());
+	    speciesExplorerPanel.getTreeGrid().getSelectionModel().addSelectionHandler(new SelectionHandler<SpeciesTreeModel>() {
+			@Override
+			public void onSelection(SelectionEvent<SpeciesTreeModel> event) {
+				showStatistiqueButton.setEnabled(true);
+				moreInformationButton.setEnabled(true);
+			}
+		});
 		initWidget(verticalPanel);
 		History.addValueChangeHandler(this);
 	}
@@ -300,7 +329,6 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 						updateTaxonomieLink.setHTML(constants.LoadTaxonomyCsv());
 						Window.alert("Chargement du fichier csv effectué avec succès");
 					}
-					
 					@Override
 					public void onFailure(Throwable caught) {
 						updateTaxonomieLink.setHTML(constants.LoadTaxonomyCsv());
@@ -310,6 +338,16 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 			}
 		} else if(source == uncheckAllButton){
 			speciesExplorerPanel.getTreeGrid().setCheckedSelection(null);
+		} else if(source == showStatistiqueButton){
+			SpeciesTreeModel model = speciesExplorerPanel.getTreeGrid().getSelectionModel().getSelectedItem();
+			if(model != null){
+				this.speciesStatistiqueDialog.showStatistic(model);
+			}
+		} else if(source == moreInformationButton){
+			SpeciesTreeModel model = speciesExplorerPanel.getTreeGrid().getSelectionModel().getSelectedItem();
+			if(model != null){
+				this.speciesMoreInformationDialog.showInformations(model);
+			}
 		}
 	}
 	

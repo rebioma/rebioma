@@ -7,22 +7,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.rebioma.client.bean.SpeciesTreeModel;
+import org.rebioma.client.bean.SpeciesTreeModel.SpeciesTreeModelProperties;
 import org.rebioma.client.gxt3.treegrid.CheckboxTreeGrid;
 import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.editor.client.Editor.Path;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.sencha.gxt.core.client.ValueProvider;
-import com.sencha.gxt.core.client.dom.Mask;
 import com.sencha.gxt.data.client.loader.RpcProxy;
-import com.sencha.gxt.data.shared.ModelKeyProvider;
-import com.sencha.gxt.data.shared.PropertyAccess;
 import com.sencha.gxt.data.shared.TreeStore;
 import com.sencha.gxt.data.shared.loader.ChildTreeStoreBinding;
-import com.sencha.gxt.data.shared.loader.LoadEvent;
-import com.sencha.gxt.data.shared.loader.LoadHandler;
 import com.sencha.gxt.data.shared.loader.TreeLoader;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -33,20 +27,6 @@ import com.sencha.gxt.widget.core.client.grid.ColumnModel;
  */
 public class SpeciesExplorerPanel {
 
-	public interface SpeciesTreeModelProperties extends
-			PropertyAccess<SpeciesTreeModel> {
-
-		@Path("label")
-		ModelKeyProvider<SpeciesTreeModel> key();
-
-		ValueProvider<SpeciesTreeModel, String> label();
-
-		ValueProvider<SpeciesTreeModel, Integer> nbPrivateOccurence();
-
-		ValueProvider<SpeciesTreeModel, Integer> nbPublicOccurence();
-
-		ValueProvider<SpeciesTreeModel, String> level();
-	}
 	private final SpeciesExplorerServiceAsync speciesExplorerService = GWT
 			.create(SpeciesExplorerService.class);
 	//

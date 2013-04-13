@@ -1576,6 +1576,11 @@ div#content {
 	float: right;
 	margin-right: 5px;
 }
+
+.btn-right{
+	float: right;
+/* 	margin-right: 3px; */
+}
 	
 	
 	

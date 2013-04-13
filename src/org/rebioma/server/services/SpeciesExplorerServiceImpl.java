@@ -13,10 +13,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.rebioma.client.bean.SpeciesStatisticModel;
 import org.rebioma.client.bean.SpeciesTreeModel;
+import org.rebioma.client.bean.SpeciesTreeModelInfoItem;
 import org.rebioma.client.bean.Taxonomy;
 import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.server.util.HibernateUtil;
@@ -429,6 +432,53 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 		     if(session!=null) session.close();
 		 }
 	    
+	}
+	@Override
+	public List<SpeciesStatisticModel> getStatistics(SpeciesTreeModel model) {
+		
+//		try {
+//			Thread.sleep(15000);//15 sec
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		//TODO à dynamyser
+		int nbRecords = model.getNbPrivateOccurence() + model.getNbPublicOccurence();
+		final List<SpeciesStatisticModel> stats = new ArrayList<SpeciesStatisticModel>();
+		SpeciesStatisticModel m1 = new SpeciesStatisticModel();
+		m1.setKindOfData("Reliable(" + model.getLabel() + ")");
+		m1.setNbRecords(nbRecords);
+		m1.setObservations("Occurrence.reviewed = 1");
+		stats.add(m1);
+		
+		SpeciesStatisticModel m2 = new SpeciesStatisticModel();
+		m2.setKindOfData("Awaiting review(" + model.getLabel() + ")");
+		m2.setNbRecords(nbRecords);
+		m2.setObservations("Occurrence.reviewed = NULL AND Occurrence.validated = 1");
+		stats.add(m2);
+		
+		SpeciesStatisticModel m3 = new SpeciesStatisticModel();
+		m3.setKindOfData("Questionable(" + model.getLabel() + ")");
+		m3.setNbRecords(nbRecords);
+		m3.setObservations("Occurrence.reviewed = 1");
+		stats.add(m3);
+		
+		SpeciesStatisticModel m4 = new SpeciesStatisticModel();
+		m4.setKindOfData("Invalidated(" + model.getLabel() + ") ");
+		m4.setNbRecords(nbRecords);
+		m4.setObservations("Occurrence.reviewed = 0");
+		stats.add(m4);
+		return stats;
+	}
+	@Override
+	public List<SpeciesTreeModelInfoItem> getInfomations(SpeciesTreeModel source) {
+		List<SpeciesTreeModelInfoItem> informations = new ArrayList<SpeciesTreeModelInfoItem>();
+		String sourceName = source.getLabel();
+		for(int i=0;i< 10;i++){
+			informations.add(new SpeciesTreeModelInfoItem("Libele Information(" + sourceName + ") " + (i + 1), "Valeur de l'information numéro " + (i + 1)));
+		}
+		return informations;
 	}
 	
 

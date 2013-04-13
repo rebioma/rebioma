@@ -1,13 +1,34 @@
 package org.rebioma.client.bean;
 
 import java.io.Serializable;
+import java.util.List;
+
+import com.google.gwt.editor.client.Editor.Path;
+import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.PropertyAccess;
 
 /**
  * 
  * @author Mikajy
  * 
  */
-public class SpeciesTreeModel  implements Serializable{
+public class SpeciesTreeModel implements Serializable{
+
+	public interface SpeciesTreeModelProperties extends
+			PropertyAccess<SpeciesTreeModel> {
+
+		@Path("label")
+		ModelKeyProvider<SpeciesTreeModel> key();
+
+		ValueProvider<SpeciesTreeModel, String> label();
+
+		ValueProvider<SpeciesTreeModel, Integer> nbPrivateOccurence();
+
+		ValueProvider<SpeciesTreeModel, Integer> nbPublicOccurence();
+
+		ValueProvider<SpeciesTreeModel, String> level();
+	}
 
 	/**
 	 * 
@@ -57,7 +78,16 @@ public class SpeciesTreeModel  implements Serializable{
 	private String vernecularName;
 	private String reviewerName;
 	private Occurrence occurrence;
+	private List<SpeciesTreeModelInfoItem> infos;
 
+	public List<SpeciesTreeModelInfoItem> getInfos() {
+		return infos;
+	}
+
+	public void setInfos(List<SpeciesTreeModelInfoItem> infos) {
+		this.infos = infos;
+	}
+	
 	public String getSubclass() {
 		return subclass;
 	}
