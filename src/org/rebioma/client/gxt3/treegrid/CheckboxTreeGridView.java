@@ -6,6 +6,7 @@ import org.rebioma.client.gxt3.treegrid.CheckboxTreeGrid.TreeGridNode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtml;
@@ -16,8 +17,8 @@ import com.sencha.gxt.core.client.dom.XElement;
 import com.sencha.gxt.core.client.util.IconHelper;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.SortDir;
-import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.data.shared.TreeStore;
+import com.sencha.gxt.data.shared.Store.StoreSortInfo;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnData;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
@@ -80,6 +81,21 @@ public class CheckboxTreeGridView<M> extends GridView<M> {
 			}
 		}
 		tree.refresh(p);
+	}
+	
+	public void unCheckAll(){
+		int size = ds.getAll().size();
+		for(int i=0;i< size; i++){
+			M model = ds.get(i);
+			TreeNode<M> cn = findNode(model);
+			TreeGridNode<M> gn = (TreeGridNode<M>)cn;
+			if(gn.getCheckState() == CheckState.CHECKED){
+				tree.setChecked(model, CheckState.UNCHECKED);
+			}
+			//pour les node invisible
+			gn.setCheckState(CheckState.UNCHECKED);
+		}
+		ds.commitChanges();
 	}
 
 	public XElement getElementContainer(TreeNode<M> node) {

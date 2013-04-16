@@ -1,8 +1,10 @@
 package org.rebioma.client.gxt3.treegrid;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -36,39 +38,40 @@ import com.sencha.gxt.data.shared.loader.LoadHandler;
 import com.sencha.gxt.data.shared.loader.TreeLoader;
 import com.sencha.gxt.messages.client.DefaultMessages;
 import com.sencha.gxt.widget.core.client.CheckProvider;
+import com.sencha.gxt.widget.core.client.box.AlertMessageBox;
 import com.sencha.gxt.widget.core.client.event.BeforeCheckChangeEvent;
+import com.sencha.gxt.widget.core.client.event.BeforeCollapseItemEvent;
+import com.sencha.gxt.widget.core.client.event.BeforeExpandItemEvent;
+import com.sencha.gxt.widget.core.client.event.CheckChangeEvent;
+import com.sencha.gxt.widget.core.client.event.CheckChangedEvent;
+import com.sencha.gxt.widget.core.client.event.CollapseItemEvent;
+import com.sencha.gxt.widget.core.client.event.ExpandItemEvent;
+import com.sencha.gxt.widget.core.client.event.XEvent;
 import com.sencha.gxt.widget.core.client.event.BeforeCheckChangeEvent.BeforeCheckChangeHandler;
 import com.sencha.gxt.widget.core.client.event.BeforeCheckChangeEvent.HasBeforeCheckChangeHandlers;
-import com.sencha.gxt.widget.core.client.event.BeforeCollapseItemEvent;
 import com.sencha.gxt.widget.core.client.event.BeforeCollapseItemEvent.BeforeCollapseItemHandler;
 import com.sencha.gxt.widget.core.client.event.BeforeCollapseItemEvent.HasBeforeCollapseItemHandlers;
-import com.sencha.gxt.widget.core.client.event.BeforeExpandItemEvent;
 import com.sencha.gxt.widget.core.client.event.BeforeExpandItemEvent.BeforeExpandItemHandler;
 import com.sencha.gxt.widget.core.client.event.BeforeExpandItemEvent.HasBeforeExpandItemHandlers;
-import com.sencha.gxt.widget.core.client.event.CheckChangeEvent;
 import com.sencha.gxt.widget.core.client.event.CheckChangeEvent.CheckChangeHandler;
 import com.sencha.gxt.widget.core.client.event.CheckChangeEvent.HasCheckChangeHandlers;
-import com.sencha.gxt.widget.core.client.event.CheckChangedEvent;
 import com.sencha.gxt.widget.core.client.event.CheckChangedEvent.CheckChangedHandler;
-import com.sencha.gxt.widget.core.client.event.CollapseItemEvent;
 import com.sencha.gxt.widget.core.client.event.CollapseItemEvent.CollapseItemHandler;
 import com.sencha.gxt.widget.core.client.event.CollapseItemEvent.HasCollapseItemHandlers;
-import com.sencha.gxt.widget.core.client.event.ExpandItemEvent;
 import com.sencha.gxt.widget.core.client.event.ExpandItemEvent.ExpandItemHandler;
 import com.sencha.gxt.widget.core.client.event.ExpandItemEvent.HasExpandItemHandlers;
-import com.sencha.gxt.widget.core.client.event.XEvent;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridView;
 import com.sencha.gxt.widget.core.client.grid.GridView.GridAppearance;
+import com.sencha.gxt.widget.core.client.tree.TreeStyle;
 import com.sencha.gxt.widget.core.client.tree.Tree.CheckCascade;
 import com.sencha.gxt.widget.core.client.tree.Tree.CheckNodes;
 import com.sencha.gxt.widget.core.client.tree.Tree.CheckState;
 import com.sencha.gxt.widget.core.client.tree.Tree.Joint;
 import com.sencha.gxt.widget.core.client.tree.Tree.TreeAppearance;
 import com.sencha.gxt.widget.core.client.tree.Tree.TreeNode;
-import com.sencha.gxt.widget.core.client.tree.TreeStyle;
 import com.sencha.gxt.widget.core.client.treegrid.TreeGridSelectionModel;
 
 public class CheckboxTreeGrid<M> extends Grid<M> implements
@@ -170,7 +173,10 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 	private IconProvider<M> iconProvider;
 	private TreeStyle style = new TreeStyle();
 	private TreeAppearance treeAppearance;
+	private final CheckboxTreeGridView<M> checkboxTreeGridView;
 	private ColumnConfig<M, ?> treeColumn;
+	
+	private Set<CheckBoxTreeGridListener<M>> listeners;
 
 	/**
 	 * Creates a new tree grid.
@@ -203,7 +209,7 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 	public CheckboxTreeGrid(TreeStore<M> store, ColumnModel<M> cm,
 			ColumnConfig<M, ?> treeColumn, GridAppearance appearance) {
 		this(store, cm, treeColumn, appearance, GWT
-				.<TreeAppearance> create(TreeAppearance.class));
+				.<TreeAppearance> create(SpeciesTreeAppearance.class));
 	}
 
 	/**
@@ -250,11 +256,25 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 
 		disabledStyle = null;
 		storeHandlerRegistration = treeStore.addStoreHandlers(storeHandler);
-
-		setView(new CheckboxTreeGridView<M>());
+		checkboxTreeGridView = new CheckboxTreeGridView<M>(); 
+		setView(checkboxTreeGridView);
 		setAllowTextSelection(false);
 
 		sinkCellEvents();
+	}
+	
+	public void unCheckAll(){
+		checkboxTreeGridView.unCheckAll();
+//		setCheckedSelection(null);
+	}
+	
+	public void addCheckBoxTreeGridListener(CheckBoxTreeGridListener<M> listener){
+		if(listener == null){
+			return;
+		}else if(this.listeners == null){
+			this.listeners = new HashSet<CheckBoxTreeGridListener<M>>();
+		}
+		this.listeners.add(listener);
 	}
 	/**
 	 * Collapses all nodes.
@@ -845,7 +865,26 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 				TreeNode<M> node = findNode(m);
 				if (node != null) {
 					Element jointEl = treeGridView.getJointElement(node);
-					if (jointEl != null
+					Element target = (com.google.gwt.user.client.Element) (Element.as(eventTarget)).cast();
+					if(target.getClassName().contains(SpeciesTreeAppearance.STATISTIC_ICON_CLASS_NAME)){
+						if(this.listeners != null){
+							for(CheckBoxTreeGridListener<M> listener: this.listeners){
+								if(listener != null){
+									listener.onTreeNodeStatisticIconClick(event, node);
+								}
+							}
+						}
+						event.stopPropagation();
+					} else if(target.getClassName().contains(SpeciesTreeAppearance.MORE_INFORMATION_ICON_CLASS_NAME)){
+						if(this.listeners != null){
+							for(CheckBoxTreeGridListener<M> listener: this.listeners){
+								if(listener != null){
+									listener.onTreeNodeMoreInformationIconClick(event, node);
+								}
+							}
+						}
+						event.stopPropagation();
+					} else if (jointEl != null
 							&& DOM.isOrHasChild(
 									(com.google.gwt.user.client.Element) jointEl
 											.cast(),
@@ -869,6 +908,10 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 		} else {
 			super.onClick(event);
 		}
+	}
+	
+	public void onStatisticIconClick(Event event, TreeNode<M> node){
+		//à implementer comme une methode abstraite
 	}
 
 	protected void onDataChange(M parent) {

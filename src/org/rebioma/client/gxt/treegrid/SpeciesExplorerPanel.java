@@ -8,11 +8,13 @@ import java.util.List;
 
 import org.rebioma.client.bean.SpeciesTreeModel;
 import org.rebioma.client.bean.SpeciesTreeModel.SpeciesTreeModelProperties;
+import org.rebioma.client.gxt3.treegrid.CheckBoxTreeGridListener;
 import org.rebioma.client.gxt3.treegrid.CheckboxTreeGrid;
 import org.rebioma.client.services.SpeciesExplorerService;
 import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.TreeStore;
@@ -20,6 +22,7 @@ import com.sencha.gxt.data.shared.loader.ChildTreeStoreBinding;
 import com.sencha.gxt.data.shared.loader.TreeLoader;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
+import com.sencha.gxt.widget.core.client.tree.Tree.TreeNode;
 
 /**
  * @author Mikajy
@@ -85,6 +88,10 @@ public class SpeciesExplorerPanel {
 		// treeGrid.setWidth(300);
 		treeGrid.setHeight(400);
 
+	}
+	
+	public void addCheckBoxGridListener(CheckBoxTreeGridListener<SpeciesTreeModel> listener){
+		treeGrid.addCheckBoxTreeGridListener(listener);
 	}
 
 	public List<SpeciesTreeModel> getCheckedSelection() {
