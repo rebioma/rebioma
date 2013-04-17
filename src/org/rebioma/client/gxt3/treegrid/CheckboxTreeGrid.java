@@ -264,8 +264,27 @@ public class CheckboxTreeGrid<M> extends Grid<M> implements
 	}
 	
 	public void unCheckAll(){
-		checkboxTreeGridView.unCheckAll();
-//		setCheckedSelection(null);
+		setCheckedSelection(null);
+		List<M> models = treeStore.getAll();
+		for(int i=0;i< models.size(); i++){
+			M model = models.get(i);
+			unCheck(model);
+		}
+	}
+	/** 
+	 * Recursivly uncheck the model and all children.
+	 * @param model
+	 */
+	private void unCheck(M model){
+		TreeNode<M> cn = findNode(model);
+		TreeGridNode<M> gn = (TreeGridNode<M>)cn;
+		gn.setCheckState(CheckState.UNCHECKED);
+		if(treeStore.hasChildren(model)){
+			List<M> children = treeStore.getAllChildren(model);
+			for(M child: children){
+				unCheck(child);
+			}
+		}
 	}
 	
 	public void addCheckBoxTreeGridListener(CheckBoxTreeGridListener<M> listener){

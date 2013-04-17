@@ -82,21 +82,6 @@ public class CheckboxTreeGridView<M> extends GridView<M> {
 		}
 		tree.refresh(p);
 	}
-	
-	public void unCheckAll(){
-		int size = ds.getAll().size();
-		for(int i=0;i< size; i++){
-			M model = ds.get(i);
-			TreeNode<M> cn = findNode(model);
-			TreeGridNode<M> gn = (TreeGridNode<M>)cn;
-			if(gn.getCheckState() == CheckState.CHECKED){
-				tree.setChecked(model, CheckState.UNCHECKED);
-			}
-			//pour les node invisible
-			gn.setCheckState(CheckState.UNCHECKED);
-		}
-		ds.commitChanges();
-	}
 
 	public XElement getElementContainer(TreeNode<M> node) {
 		if (node.getElementContainer() == null) {
