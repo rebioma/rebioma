@@ -443,7 +443,7 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 //			e.printStackTrace();
 //		}
 		
-		//TODO à dynamyser
+		//TODO à dynamyser !
 		int nbRecords = model.getNbPrivateOccurence() + model.getNbPublicOccurence();
 		final List<SpeciesStatisticModel> stats = new ArrayList<SpeciesStatisticModel>();
 		SpeciesStatisticModel m1 = new SpeciesStatisticModel();
