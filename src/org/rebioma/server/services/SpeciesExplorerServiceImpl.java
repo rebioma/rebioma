@@ -70,48 +70,48 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 		if(obj!=null && obj.getKingdom()!=null && !obj.getKingdom().toString().isEmpty()) {
 			concerne="Phylum ";
 			colonne+="AcceptedKingdom,";
-			where+=" AND Acceptedkingdom='"+obj.getKingdom()+"' ";
-			whereTaxonomy+=" AND kingdom='"+obj.getKingdom()+"' ";
+			where+=" AND upper(Acceptedkingdom)=upper('"+obj.getKingdom()+"') ";
+			whereTaxonomy+=" AND upper(kingdom)=upper('"+obj.getKingdom()+"') ";
 			
 			colonne+="AcceptedPhylum,";
 			level=LEVELS.get("PHYLUM");
 			//colonneSource=" getInfosPhylum(t.phylum) ";
 		}
 		if(obj!=null && obj.getPhylum()!=null && !obj.getPhylum().toString().isEmpty() ) {
-			where+=" AND AcceptedPhylum='"+obj.getPhylum()+"' ";
-			whereTaxonomy+=" AND Phylum='"+obj.getPhylum()+"' ";
+			where+=" AND upper(AcceptedPhylum)=upper('"+obj.getPhylum()+"') ";
+			whereTaxonomy+=" AND upper(Phylum)=upper('"+obj.getPhylum()+"') ";
 			concerne="Class ";
 			colonne+="AcceptedClass,";
 			level=LEVELS.get("CLASS");
 			//colonneSource=" getInfosClass(t.class) ";
 		}
 		if(obj!=null && obj.getClass_()!=null && !obj.getClass_().toString().isEmpty() ) {
-			where+=" AND Acceptedclass='"+obj.getClass_()+"' ";
-			whereTaxonomy+=" AND class='"+obj.getClass_()+"' ";
+			where+=" AND upper(Acceptedclass)=upper('"+obj.getClass_()+"') ";
+			whereTaxonomy+=" AND upper(class)=upper('"+obj.getClass_()+"') ";
 			concerne="order ";
 			colonne+="Acceptedorder,";
 			level=LEVELS.get("ORDER");
 			//colonneSource=" getInfosGenus(t.genus) ";
 		}
 		if(obj!=null && obj.getOrder()!=null && !obj.getOrder().toString().isEmpty() ) {
-			where+=" AND Acceptedorder='"+obj.getOrder()+"' ";
-			whereTaxonomy+=" AND `order`='"+obj.getOrder()+"' ";
+			where+=" AND upper(Acceptedorder)=upper('"+obj.getOrder()+"') ";
+			whereTaxonomy+=" AND upper(\"order\")=upper('"+obj.getOrder()+"') ";
 			concerne="family ";
 			colonne+="Acceptedfamily,";
 			level=LEVELS.get("FAMILY");
 			//colonneSource=" getInfosFamily(t.family) ";
 		}
 		if(obj!=null && obj.getFamily()!=null && !obj.getFamily().toString().isEmpty() ) {
-			where+=" AND Acceptedfamily='"+obj.getFamily()+"' ";
-			whereTaxonomy+=" AND family='"+obj.getFamily()+"' ";
+			where+=" AND upper(Acceptedfamily)=upper('"+obj.getFamily()+"') ";
+			whereTaxonomy+=" AND upper(family)=upper('"+obj.getFamily()+"') ";
 			concerne="genus ";
 			colonne+="Acceptedgenus,";
 			level=LEVELS.get("GENUS");
 			//colonneSource=" getInfosFamily(t.family) ";
 		}
 		if(obj!=null && obj.getGenus()!=null && !obj.getGenus().toString().isEmpty() ) {
-			where+=" AND Acceptedgenus='"+obj.getGenus()+"' ";
-			whereTaxonomy+=" AND genus='"+obj.getGenus()+"' ";
+			where+=" AND upper(Acceptedgenus)=upper('"+obj.getGenus()+"') ";
+			whereTaxonomy+=" AND upper(genus)=upper('"+obj.getGenus()+"') ";
 			concerne="species ";
 			colonne+="Acceptedspecies,";
 			level=LEVELS.get("ACCEPTEDSPECIES"); 
@@ -132,23 +132,23 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 		if(concerneTaxonomy.equalsIgnoreCase("species "))
 			concerneTaxonomy="accepted"+concerneTaxonomy;
 		if(concerneTaxonomy.equalsIgnoreCase("order "))
-			concerneTaxonomy="`order` ";
-		
-		ret="SELECT DISTINCT t."+concerneTaxonomy+" as concerne, IFNULL( public,0) as publics, IFNULL(private,0) as privates,"+colonneSource+" as source  "+
+			concerneTaxonomy="\"order\" ";
+		String colonneUpper = colonne.replaceAll("Accepted", "upper(Accepted").replaceAll(",", "),");
+		ret="SELECT DISTINCT t."+concerneTaxonomy+" as concerne, COALESCE( public,0) as publics, COALESCE(private,0) as privates, upper("+colonneSource+") as source  "+
 		" from taxonomy t LEFT JOIN \n" +
 		"(\n" +
-		"SELECT sum(public)  as public  ,sum(private)  as private, Accepted"+concerne+"  as concerne FROM(\n" +
-		"SELECT DISTINCT "+colonne+" count(*) as private, 0 as public FROM Occurrence o WHERE o.Public=0 \n" +
+		"SELECT sum(public)  as public  ,sum(private)  as private, upper(Accepted"+concerne+")  as concerne FROM(\n" +
+		"SELECT DISTINCT "+colonne+" count(*) as private, 0 as public FROM Occurrence o WHERE o.Public=false \n" +
 		where +
 		"GROUP BY "+colonne.substring(0, colonne.length()-1) + " \n "+
 		"UNION\n" +
-		" SELECT DISTINCT "+colonne+"  0 as private,count(*) as public FROM Occurrence o WHERE o.Public=1 \n" +
+		" SELECT DISTINCT " + colonneUpper +"  0 as private,count(*) as public FROM Occurrence o WHERE o.Public=true \n" +
 		where +
-		" GROUP BY "+colonne.substring(0, colonne.length()-1)  + " \n "+
+		" GROUP BY " + colonneUpper.substring(0, colonneUpper.length()-1)  + " \n "+
 		")tb\n" +
-		"GROUP BY " +colonne.substring(0, colonne.length()-1)  + " \n "+
+		"GROUP BY " +colonneUpper.substring(0, colonneUpper.length()-1)  + " \n "+
 		")tt\n" +
-		"ON t." +concerneTaxonomy+" = tt.concerne " + whereTaxonomy;
+		"ON upper(t." +concerneTaxonomy+") = upper(tt.concerne) " + whereTaxonomy;
 		tabs[0]=ret;
 		tabs[1]=level;
 		return tabs;

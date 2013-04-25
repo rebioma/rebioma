@@ -1,6 +1,7 @@
 package org.rebioma.client;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -929,6 +930,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 					OccurrenceComments comment = new OccurrenceComments();
 					comment.setOccurrenceId(currentOccurrence.getId());
 					comment.setUserComment(commentText.getText());
+					comment.setDateCommented(new Date());
 					Set<OccurrenceComments> comments = new HashSet<OccurrenceComments>();
 					comments.add(comment);
 					DataSwitch.get().updateComments(sessionId, comments,
