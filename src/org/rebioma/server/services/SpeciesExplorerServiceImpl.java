@@ -434,52 +434,216 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 	    
 	}
 	@Override
-	public List<SpeciesStatisticModel> getStatistics(SpeciesTreeModel model) {
+	public List<SpeciesStatisticModel> getStatistics(SpeciesTreeModel obj) {
 		
-//		try {
-//			Thread.sleep(15000);//15 sec
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		String colonne="";
+		if(obj==null || obj.getKingdom()==null || obj.getKingdom().toString().isEmpty()) {			
+			colonne=" AND upper(AcceptedKingdom)=upper('"+obj.getKingdom()+"')";
+		}
+		if(obj!=null && obj.getKingdom()!=null && !obj.getKingdom().toString().isEmpty()) {			
+			colonne=" AND upper(AcceptedKingdom)=upper('"+obj.getKingdom()+"')";
+		}
+		if(obj!=null && obj.getPhylum()!=null && !obj.getPhylum().toString().isEmpty() ) {
+			colonne+=" AND upper(AcceptedPhylum)=upper('"+obj.getPhylum()+"')";
+		}
+		if(obj!=null && obj.getClass_()!=null && !obj.getClass_().toString().isEmpty() ) {
+			colonne+=" AND upper(Acceptedclass)=upper('"+obj.getClass_()+"') ";			
+		}
+		if(obj!=null && obj.getOrder()!=null && !obj.getOrder().toString().isEmpty() ) {
+			colonne+=" AND  upper(Acceptedorder)=upper('"+obj.getOrder()+"') ";			
+		}
+		if(obj!=null && obj.getFamily()!=null && !obj.getFamily().toString().isEmpty() ) {
+			colonne+=" AND  upper(Acceptedfamily)=upper('"+obj.getFamily()+"') ";			
+		}
+		if(obj!=null && obj.getGenus()!=null && !obj.getGenus().toString().isEmpty() ) {
+			colonne+=" AND  upper(Acceptedgenus)=upper('"+obj.getGenus()+"') ";			
+		}
+		if(obj!=null && obj.getAcceptedspecies()!=null && !obj.getAcceptedspecies().toString().isEmpty() ) {
+			colonne+=" AND  upper(Acceptedspecies)=upper('"+obj.getAcceptedspecies()+"') ";			
+		}
 		
-		//TODO à dynamyser !
-		int nbRecords = model.getNbPrivateOccurence() + model.getNbPublicOccurence();
+		colonne=" WHERE 1=1 "+colonne;
+		String sql=" SELECT Count(*) FROM occurrence " + colonne;
+		
 		final List<SpeciesStatisticModel> stats = new ArrayList<SpeciesStatisticModel>();
-		SpeciesStatisticModel m1 = new SpeciesStatisticModel();
-		m1.setKindOfData("Reliable(" + model.getLabel() + ")");
-		m1.setNbRecords(nbRecords);
-		m1.setObservations("Occurrence.reviewed = 1");
-		stats.add(m1);
 		
-		SpeciesStatisticModel m2 = new SpeciesStatisticModel();
-		m2.setKindOfData("Awaiting review(" + model.getLabel() + ")");
-		m2.setNbRecords(nbRecords);
-		m2.setObservations("Occurrence.reviewed = NULL AND Occurrence.validated = 1");
-		stats.add(m2);
 		
-		SpeciesStatisticModel m3 = new SpeciesStatisticModel();
-		m3.setKindOfData("Questionable(" + model.getLabel() + ")");
-		m3.setNbRecords(nbRecords);
-		m3.setObservations("Occurrence.reviewed = 1");
-		stats.add(m3);
+		Session sess = null;		
+		Connection conn =null;
+		try {
+			sess=HibernateUtil.getSessionFactory().openSession(); 
+			conn=sess.connection();			
+			
+			
+			SpeciesStatisticModel m1 = new SpeciesStatisticModel();
+			m1.setKindOfData("Reliable(" + obj.getLabel() + ")");
+			m1.setNbRecords(getSpeciesStatisticModel(conn,sql + " AND reviewed = true ").getNbRecords());
+			m1.setObservations("Occurrence.reviewed = 1");
+			
+			stats.add(m1);
+			
+			SpeciesStatisticModel m2 = new SpeciesStatisticModel();
+			m2.setKindOfData("Awaiting review(" + obj.getLabel() + ")");
+			m2.setNbRecords(getSpeciesStatisticModel(conn,sql + " AND reviewed IS NULL AND validated = true ").getNbRecords());
+			m2.setObservations("Occurrence.reviewed = NULL AND Occurrence.validated = 1");
+			stats.add(m2);
+			
+			SpeciesStatisticModel m3 = new SpeciesStatisticModel();
+			m3.setKindOfData("Questionable(" + obj.getLabel() + ")");
+			m3.setNbRecords(getSpeciesStatisticModel(conn,sql + " AND reviewed = false ").getNbRecords());
+			m3.setObservations("Occurrence.reviewed = 0");
+			stats.add(m3);
+			
+			SpeciesStatisticModel m4 = new SpeciesStatisticModel();
+			m4.setKindOfData("Invalidated(" + obj.getLabel() + ") ");
+			m4.setNbRecords(getSpeciesStatisticModel(conn,sql + " AND validated = false ").getNbRecords());
+			m4.setObservations("Occurrence.validated = 0");
+			stats.add(m4);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			
+		}finally {			
+			if(conn!=null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {					
+					e.printStackTrace();
+				}
+			}
+			if(sess!=null)
+				sess.close();
+		}	
 		
-		SpeciesStatisticModel m4 = new SpeciesStatisticModel();
-		m4.setKindOfData("Invalidated(" + model.getLabel() + ") ");
-		m4.setNbRecords(nbRecords);
-		m4.setObservations("Occurrence.reviewed = 0");
-		stats.add(m4);
 		return stats;
 	}
 	@Override
-	public List<SpeciesTreeModelInfoItem> getInfomations(SpeciesTreeModel source) {
+	public List<SpeciesTreeModelInfoItem> getInfomations(SpeciesTreeModel obj) {
 		List<SpeciesTreeModelInfoItem> informations = new ArrayList<SpeciesTreeModelInfoItem>();
+		/*
 		String sourceName = source.getLabel();
 		for(int i=0;i< 10;i++){
 			informations.add(new SpeciesTreeModelInfoItem("Libele Information(" + sourceName + ") " + (i + 1), "Valeur de l'information numéro " + (i + 1)));
 		}
+		*/
+		String colonne=""; String source=" ( Kingdomsource ";
+		if(obj==null || obj.getKingdom()==null || obj.getKingdom().toString().isEmpty()) {			
+			colonne=" AND  upper(Kingdom)=upper('"+obj.getKingdom()+"')";			
+		}
+		if(obj!=null && obj.getKingdom()!=null && !obj.getKingdom().toString().isEmpty()) {			
+			colonne=" AND  upper(Kingdom)=upper('"+obj.getKingdom()+"')";			
+		}
+		if(obj!=null && obj.getPhylum()!=null && !obj.getPhylum().toString().isEmpty() ) {
+			colonne+=" AND  upper(Phylum)=upper('"+obj.getPhylum()+"')";
+			source+=" || '-' ||  phylumsource";
+		}
+		if(obj!=null && obj.getClass_()!=null && !obj.getClass_().toString().isEmpty() ) {
+			colonne+=" AND  upper(class)=upper('"+obj.getClass_()+"') ";		
+			source+=" || '-' || classsource ";
+		}
+		if(obj!=null && obj.getOrder()!=null && !obj.getOrder().toString().isEmpty() ) {
+			colonne+="  AND upper(`order`)=upper('"+obj.getOrder()+"') ";
+			source+=" || '-' || ordersource ";
+		}
+		if(obj!=null && obj.getFamily()!=null && !obj.getFamily().toString().isEmpty() ) {
+			colonne+="  AND upper(family)=upper('"+obj.getFamily()+"') ";
+			source+=" || '-' || familysource ";
+		}
+		if(obj!=null && obj.getGenus()!=null && !obj.getGenus().toString().isEmpty() ) {
+			colonne+="  AND upper(genus)=upper('"+obj.getGenus()+"') ";
+			source+=" || '-' ||  genussource ";
+		}
+		if(obj!=null && obj.getAcceptedspecies()!=null && !obj.getAcceptedspecies().toString().isEmpty() ) {
+			colonne+=" AND  upper(Acceptedspecies)=upper('"+obj.getAcceptedspecies()+"') ";			
+		}
+		source+=") as source";
+		String sql="SELECT '' as authority,status,'' as taxa, "+source+" ,'' as vernecularname , reviewedby FROM taxonomy WHERE 1=1 "+colonne;
+		
+		System.out.println(sql);
+		
+		Session sess = null;		
+		Connection conn =null;
+		
+			
+		Statement st=null;
+		ResultSet rst=null;
+		try {
+			sess=HibernateUtil.getSessionFactory().openSession(); 
+			conn=sess.connection();	
+			st = conn.createStatement();
+			rst = st.executeQuery(sql);
+			rst.next();
+			informations.add(new SpeciesTreeModelInfoItem("Authority " ,  rst.getString("authority")  ));
+			informations.add(new SpeciesTreeModelInfoItem("Status " ,  rst.getString("status")  ));
+			informations.add(new SpeciesTreeModelInfoItem("Synonymised taxa " ,  rst.getString("taxa")  ));
+			informations.add(new SpeciesTreeModelInfoItem("Source " ,  rst.getString("source")  ));
+			informations.add(new SpeciesTreeModelInfoItem("Vernecular name " ,  rst.getString("vernecularname")  ));
+			informations.add(new SpeciesTreeModelInfoItem("Reviewedby " ,  rst.getString("reviewedby")  ));
+			//	informations.add(new SpeciesTreeModelInfoItem("Libele Information(" + rst. + ") " + (i + 1), "Valeur de l'information numéro " + (i + 1)));
+				
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(rst!=null) {
+				try {
+					rst.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			if(st!=null) {
+				try {
+					st.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			if(conn!=null) {
+				try {
+					conn.close();
+				} catch (SQLException e) {					
+					e.printStackTrace();
+				}
+			}
+			if(sess!=null)
+				sess.close();
+		}	
+		
+		
 		return informations;
 	}
 	
-
+	private SpeciesStatisticModel getSpeciesStatisticModel(Connection conn,String sql ){
+		System.out.println(sql);
+		SpeciesStatisticModel ret = new SpeciesStatisticModel();		
+		Statement st=null;
+		ResultSet rst=null;
+		try {
+			
+			st = conn.createStatement();
+			rst = st.executeQuery(sql);
+			while(rst.next()) {
+				ret.setNbRecords( rst.getInt(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(rst!=null) {
+				try {
+					rst.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			if(st!=null) {
+				try {
+					st.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}			
+		}	
+		return ret;
+	}
 }
