@@ -3031,6 +3031,16 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   @DefaultStringValue(" to date:")
   @Key("labelToDate")
   String labelToDate();
+
+  
+  @DefaultStringValue("Go")
+  @Key("goButton")
+  String goButton();
+  
+  @DefaultStringValue("Statistics")
+  @Key("statistics")
+  String Statistics();
+
   
   @DefaultStringValue("Show Statistic")
   @Key("ShowStatistic")
@@ -3044,6 +3054,78 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   @Key("MoreInformations")
   String MoreInformations();
 
+ 
+  @DefaultStringValue("Numbers of occurrences per data manager user ")
+  @Key("statsPerManagerUser")
+  String statsPerManagerUser();
+  
+  @DefaultStringValue("Numbers of occurrences  per data provider institution")
+  @Key("statsPerProviderInstitution")
+  String statsPerProviderInstitution();
+  
+  @DefaultStringValue("Numbers of occurrences per collection code")
+  @Key("statsPerCollectionCode")
+  String statsPerCollectionCode();
+  
+  
+  //columns of stqtistics tqble
+  @DefaultStringValue("Private data")
+  @Key("privateData")
+  String privateData();
+  
+  
+  @DefaultStringValue("Public data")
+  @Key("publicData")
+  String publicData();
+  
+  
+  @DefaultStringValue("Reliable")
+  @Key("reliable")
+  String reliable();
+  
+  @DefaultStringValue("Awaiting review")
+  @Key("awaiting")
+  String awaiting();
+  
+  @DefaultStringValue("Questionable")
+  @Key("questionable")
+  String questionable();
+  
+  @DefaultStringValue("Invalidated")
+  @Key("invalidated")
+  String invalidated();
+  
+  @DefaultStringValue("All")
+  @Key("all")
+  String all();
+  
+  @DefaultStringValue("Emailing setting")
+  @Key("emailSetting")
+  String emailSetting();
+  
+  @DefaultStringValue("System status")
+  @Key("systemStatus")
+  String systemStatus();
+  
+  @DefaultStringValue("Frequency")
+  @Key("frequency")
+  String frequency();
+  
+  @DefaultStringValue("Starting date")
+  @Key("startingDate")
+  String startingDate();
+  
+  @DefaultStringValue("Monthly")
+  @Key("Monthly")
+  String monthly();
+  
+  @DefaultStringValue("Weekly")
+  @Key("Weekly")
+  String weekly();
+  
+  @DefaultStringValue("2 Weeks")
+  @Key("Weeks")
+  String weeks();
   /**
    * Translated "Occurrence Comment".
    * 

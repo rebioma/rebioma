@@ -11,41 +11,57 @@ import org.rebioma.client.services.StatisticsServiceAsync;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.IdentityValueProvider;
 import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
+import com.sencha.gxt.data.shared.StringLabelProvider;
 import com.sencha.gxt.data.shared.loader.LoadResultListStoreBinding;
 import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoader;
 import com.sencha.gxt.widget.core.client.FramedPanel;
+import com.sencha.gxt.widget.core.client.button.TextButton;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
 import com.sencha.gxt.widget.core.client.event.CellClickEvent;
 import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.form.SimpleComboBox;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
 import com.sencha.gxt.widget.core.client.grid.GridSelectionModel;
+import com.sencha.gxt.widget.core.client.toolbar.LabelToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 
 public class StatisticsPanel  extends Widget{
-	private final StatisticsServiceAsync statService = GWT
+	private final StatisticsServiceAsync statisticsService = GWT
 	.create(StatisticsService.class);
 	
 	//private ContentPanel root;
 	public static final int NUM_PAGE = 9;
-	
-
+	private int intStatisticType = 1;
+	private String BY_OWNER = "Numbers of occurrences per data manager user ";
+	private String BY_INSTITUTION = "Numbers of occurrences  per data provider institution";
+	private String BY_COLLECTION = "Numbers of occurrences per collection code";
+	private String BY_YEAR = "Numbers of occurrences per year";
+	String title = "";
+	 FramedPanel cp ;
+	 RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>> proxy;
 	public Widget statisticsPanel(String gridTitle) {
-		 final StatisticsServiceAsync service = GWT.create(StatisticsService.class);
-		RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>> proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>>() {
+		
+		proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>>() {
 		      @Override
 		      public void load(PagingLoadConfig loadConfig, AsyncCallback<PagingLoadResult<StatisticModel>> callback) {
-		        service.getStatisticsByType(0,loadConfig, callback);
+		    	  statisticsService.getStatisticsByType(intStatisticType,loadConfig, callback);
 		      }
 		    };
 		// Generate the key provider and value provider for the Data class
@@ -60,7 +76,7 @@ public class StatisticsPanel  extends Widget{
 		ccs.add(new ColumnConfig<StatisticModel, Integer>(
 				statisticsModelProperties.nbPublicData(), 80,"Public data"));
 		ccs.add(new ColumnConfig<StatisticModel, Integer>(
-				statisticsModelProperties.nbReliable(), 80, "Public Occurrences"));
+				statisticsModelProperties.nbReliable(), 80, "Reliable"));
 		ccs.add(new ColumnConfig<StatisticModel, Integer>(
 				statisticsModelProperties.nbAwaiting(), 100, "Awaiting review"));
 		ccs.add(new ColumnConfig<StatisticModel, Integer>(
@@ -81,6 +97,23 @@ public class StatisticsPanel  extends Widget{
 	          return "" + item.getIdKey();
 	        }
 	      });
+	  	
+	  	 ToolBar toolBarHaut = new ToolBar();
+	  	toolBarHaut.add(new LabelToolItem("Statistics: "));
+	    SimpleComboBox<String> type = new SimpleComboBox<String>(new StringLabelProvider<String>());
+	      type.setTriggerAction(TriggerAction.ALL);
+	      type.setEditable(false);
+	      type.setWidth(300);
+	      type.add(BY_OWNER);
+	      type.add(BY_INSTITUTION);
+	      type.add(BY_COLLECTION);
+	      type.add(BY_YEAR);
+	      type.setValue(BY_OWNER);
+	      
+	      TextButton save  = new TextButton("Go");
+	      toolBarHaut.add(type);
+	      toolBarHaut.add(save);
+	 
 	      
 	  	
 	  	final PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>> loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>>(
@@ -88,22 +121,12 @@ public class StatisticsPanel  extends Widget{
 	  	    loader.setRemoteSort(true);
 	  	    loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, StatisticModel, PagingLoadResult<StatisticModel>>(store));
 	  	    
-	  	  final PagingToolBar toolBar = new PagingToolBar(50);
+	  	  final PagingToolBar toolBar = new PagingToolBar(10);
 	      toolBar.getElement().getStyle().setProperty("borderBottom", "none");
 	      toolBar.bind(loader);
 	       
 	      IdentityValueProvider<StatisticModel> identity = new IdentityValueProvider<StatisticModel>();
-	     /* final CheckBoxSelectionModel<StatisticModel> sm = new CheckBoxSelectionModel<StatisticModel>(identity) {
-	        @Override
-	        protected void onRefresh(RefreshEvent event) {
-	          // this code selects all rows when paging if the header checkbox is selected
-	          if (isSelectAllChecked()) {
-	            selectAll();
-	          }
-	          super.onRefresh(event);
-	        }
-	      };
-	     */
+	    
 	  	  /*ListStore<StatisticModel> store = new ListStore<StatisticModel>(statisticsModelProperties.key());
 		      store.addAll(StatisticModel.getstats());*/
 	     /* root = new ContentPanel();
@@ -129,19 +152,18 @@ public class StatisticsPanel  extends Widget{
 	        grid.getView().setForceFit(true);
 	        grid.setLoadMask(true);
 	        grid.setLoader(loader);
-	     // grid.getView().setAutoExpandColumn();
-	     /* grid.getView().setStripeRows(true);
-	      grid.getView().setColumnLines(true);
-	      grid.setBorders(false);*/
+	     
 	        
-	        FramedPanel cp = new FramedPanel();
+	       cp = new FramedPanel();
 	        cp.setCollapsible(true);
-	        cp.setHeadingText("gridTitle");
+	        cp.setHeadingText(BY_OWNER);
 	        cp.setPixelSize(730, 400);
 	        cp.addStyleName("margin-10");
 	        
 	        VerticalLayoutContainer con = new VerticalLayoutContainer();
+	        
 	        con.setBorders(true);
+	        con.add(toolBarHaut);
 	        con.add(grid, new VerticalLayoutData(1, 1));
 	        con.add(toolBar, new VerticalLayoutData(1, -1));
 	        cp.setWidget(con);
@@ -161,23 +183,47 @@ public class StatisticsPanel  extends Widget{
 				
 			}
 		});
+	      type.addSelectionHandler(new SelectionHandler<String>() {
+				
+				@Override
+				public void onSelection(SelectionEvent<String> arg0) {
+					if(arg0.getSelectedItem().equals(BY_OWNER)){
+						intStatisticType = 1;
+						title = BY_OWNER;
+					}else if(arg0.getSelectedItem().equals(BY_INSTITUTION)){
+						intStatisticType = 2;
+						title = BY_INSTITUTION;
+					}else if(arg0.getSelectedItem().equals(BY_COLLECTION)){
+						intStatisticType = 3;
+						title = BY_COLLECTION;
+					}else if(arg0.getSelectedItem().equals(BY_YEAR)){
+						intStatisticType = 4;
+						title = BY_YEAR;
+					}
+					
+				}
+			});
 	      
-	     /* VerticalLayoutContainer con = new VerticalLayoutContainer();
-	      root.setWidget(con);
-	 
+	      
+	      //getAnotherStatistics
+	      save.addSelectHandler(new SelectHandler() {
+			
+			@Override
+			public void onSelect(SelectEvent event) {
+				cp.setHeadingText(title);
+				
+				
+			}
+		});
+	      
 	     
-	      con.add(grid, new VerticalLayoutData(1, -1));
-	 
-	      // needed to enable quicktips (qtitle for the heading and qtip for the
-	      // content) that are setup in the change GridCellRenderer
-	      new QuickTip(grid);*/
 		return cp;
 		
 	}
-	/*public  Grid<StatisticModel> getGrid(){
-		return 
+	
+	protected void changeStatistics(){
 		
 	}
-	*/
+	
 
 }

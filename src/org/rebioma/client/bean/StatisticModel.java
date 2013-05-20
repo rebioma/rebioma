@@ -56,10 +56,11 @@ public class StatisticModel implements Serializable{
 		
 	}
 	
-	public StatisticModel(int idkey,String title, int nbPrivateData, int nbPublicData,
+	public StatisticModel(int idkey, int statType,String title, int nbPrivateData, int nbPublicData,
 			int nbReliable, int nbAwaiting, int nbQuestionable, int nbInvalidated){
 		this.idKey = idkey;
 		this.title = title;
+		this.statisticType = statType;
 		this.nbPrivateData = nbPrivateData;
 		this.nbPublicData = nbPublicData;
 		this.nbReliable = nbReliable;
@@ -120,15 +121,6 @@ public class StatisticModel implements Serializable{
 		this.nbInvalidated = invalidated;
 	}
 	
-	//for testing
-	public static List<StatisticModel> getstats(){
-		List<StatisticModel> list = new ArrayList<StatisticModel>();
-		for(int i = 0; i<=10;i++){
-			list.add(new StatisticModel(1, "Rakoto frah", 2, 3, 4, 5, 6, 7));
-		}
-		return list;
-	}
-
 	public void setStatisticType(int statisticType) {
 		this.statisticType = statisticType;
 	}
