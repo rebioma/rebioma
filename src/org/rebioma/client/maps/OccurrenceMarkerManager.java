@@ -85,14 +85,14 @@ public class OccurrenceMarkerManager{
 				 */
 				if (Boolean.TRUE.equals(occurrence.isValidated())
 						&& Boolean.TRUE.equals(occurrence.getReviewed())) {// reliable
-					iconColor = "00ff00";// vert
+					iconColor = "cefbc5";// vert
 				} else if (Boolean.FALSE.equals(occurrence.getReviewed())) {// Questionnable
-					iconColor = "0000ff";// blue
+					iconColor = "bdc3fb";// blue
 				} else if (Boolean.FALSE.equals(occurrence.isValidated())) {// invalide
-					iconColor = "ff0000";// rouge
+					iconColor = "fa93ab";// rouge
 				} else {
 					// En attente de validation
-					iconColor = "ffff00";
+					iconColor = "fbecc5";
 					;// "D9D919";//jaune
 				}
 				url = "http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld="
