@@ -543,7 +543,7 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 			source+=" || '-' || classsource ";
 		}
 		if(obj!=null && obj.getOrder()!=null && !obj.getOrder().toString().isEmpty() ) {
-			colonne+="  AND upper(`order`)=upper('"+obj.getOrder()+"') ";
+			colonne+="  AND upper(\"order\")=upper('"+obj.getOrder()+"') ";
 			source+=" || '-' || ordersource ";
 		}
 		if(obj!=null && obj.getFamily()!=null && !obj.getFamily().toString().isEmpty() ) {
