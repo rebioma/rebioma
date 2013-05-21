@@ -14,6 +14,7 @@ import org.rebioma.server.util.HibernateUtil;
 
 import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
+import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
 
 public class StatisticsServiceImpl implements StatisticsService {
 
@@ -85,6 +86,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 						"GROUP BY  " + colonne +
 						")as tbl\n" +
 						"GROUP BY libelle";
+		System.out.println(sql);
 		Session sess = null;		
 		Connection conn =null;
 		Statement st=null;
@@ -148,8 +150,18 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Override
 	public PagingLoadResult<StatisticModel> getStatisticsByType(
 			int statisticsType, PagingLoadConfig config) {
-		// TODO Auto-generated method stub
-		return null;
+		List<StatisticModel> statisticModels = getStatisticsByType(statisticsType);
+		int start = config.getOffset();
+		int limit = statisticModels.size();
+		ArrayList<StatisticModel> subListToShow = new ArrayList<StatisticModel>(); 
+		if (config.getLimit() > 0) {  
+			limit = Math.min(start + config.getLimit(), limit);  
+		}  
+		for (int i = config.getOffset(); i < limit; i++) {        
+			subListToShow.add(statisticModels.get(i));
+		}         
+		return new PagingLoadResultBean<StatisticModel>  
+			(subListToShow, statisticModels.size(),config.getOffset());  
 	}
 
 }
