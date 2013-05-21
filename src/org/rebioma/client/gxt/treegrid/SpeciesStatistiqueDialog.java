@@ -52,15 +52,15 @@ public class SpeciesStatistiqueDialog extends Dialog {
 				props.key());
 
 		ColumnConfig<SpeciesStatisticModel, String> kindOfDataCC = new ColumnConfig<SpeciesStatisticModel, String>(
-				props.kindOfData(), 100, "Kind of Data");
+				props.kindOfData(), 300, "Kind of Data");
 		ColumnConfig<SpeciesStatisticModel, Integer> nbRecordCC = new ColumnConfig<SpeciesStatisticModel, Integer>(
-				props.nbRecords(), 50, "Number of records");
-		ColumnConfig<SpeciesStatisticModel, String> observationCC = new ColumnConfig<SpeciesStatisticModel, String>(
-				props.observations(), 500, "Observations");
+				props.nbRecords(), 200, "Number of records");
+		/*ColumnConfig<SpeciesStatisticModel, String> observationCC = new ColumnConfig<SpeciesStatisticModel, String>(
+				props.observations(), 500, "Observations");*/
 		List<ColumnConfig<SpeciesStatisticModel, ?>> l = new ArrayList<ColumnConfig<SpeciesStatisticModel, ?>>();
 		l.add(kindOfDataCC);
 		l.add(nbRecordCC);
-		l.add(observationCC);
+		//l.add(observationCC);
 		ColumnModel<SpeciesStatisticModel> cm = new ColumnModel<SpeciesStatisticModel>(l);
 		grid = new Grid<SpeciesStatisticModel>(store, cm);
 		grid.getView().setAutoExpandColumn(kindOfDataCC);
@@ -74,8 +74,8 @@ public class SpeciesStatistiqueDialog extends Dialog {
 		grid.setStateful(true);
 		grid.setStateId("gridExample");
 		setBodyBorder(false);
-		setWidth(700);
-		setHeight(300);
+		setWidth(550);
+		setHeight(250);
 		setHideOnButtonClick(true);
 		setModal(true);
 		add(grid);

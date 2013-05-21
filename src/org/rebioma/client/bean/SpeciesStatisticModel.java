@@ -19,7 +19,7 @@ public class SpeciesStatisticModel implements Serializable {
 
 		ValueProvider<SpeciesStatisticModel, Integer> nbRecords();
 
-		ValueProvider<SpeciesStatisticModel, String> observations();
+		//ValueProvider<SpeciesStatisticModel, String> observations();
 	}
 
 	private static final long serialVersionUID = 3998904104630596963L;
