@@ -56,6 +56,9 @@ public class StatisticsPanel  extends Widget{
 	String title = "";
 	 FramedPanel cp ;
 	 RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>> proxy;
+	 private  PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>> loader;
+	 
+	 
 	public Widget statisticsPanel(String gridTitle) {
 		
 		proxy = new RpcProxy<PagingLoadConfig, PagingLoadResult<StatisticModel>>() {
@@ -113,11 +116,8 @@ public class StatisticsPanel  extends Widget{
 	      TextButton save  = new TextButton("Go");
 	      toolBarHaut.add(type);
 	      toolBarHaut.add(save);
-	 
-	      
 	  	
-	  	final PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>> loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>>(
-	  	        proxy);
+	  	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>>(proxy);
 	  	    loader.setRemoteSort(true);
 	  	    loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, StatisticModel, PagingLoadResult<StatisticModel>>(store));
 	  	    
@@ -211,6 +211,8 @@ public class StatisticsPanel  extends Widget{
 			@Override
 			public void onSelect(SelectEvent event) {
 				cp.setHeadingText(title);
+				loader.load();
+				
 				
 				
 			}
