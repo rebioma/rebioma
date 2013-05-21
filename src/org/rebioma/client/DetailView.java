@@ -17,6 +17,7 @@ import org.rebioma.client.bean.OccurrenceComments;
 import org.rebioma.client.bean.OccurrenceReview;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.bean.User;
+import org.rebioma.client.maps.OccurrenceMarkerManager;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -1544,6 +1545,11 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 				// MarkerImage shadow =
 				// MarkerImage.newInstance(DEFAULT_MARKER_SHADOW_URL);
 				marker.setIcon(icon);
+			}
+			if(currentOccurrence != null){
+				marker.setMap((MapWidget)null);
+				OccurrenceMarkerManager markerManager = OccurrenceMarkerManager.newInstance(currentOccurrence);
+				marker = markerManager.getMarker();
 			}
 			// marker.setShadow(shadow);
 			// marker.getIcon_MarkerImage().setUrl(DEFAULT_MARKER_ICON);
