@@ -12,11 +12,12 @@ import org.rebioma.client.bean.StatisticModel;
 import org.rebioma.client.services.StatisticsService;
 import org.rebioma.server.util.HibernateUtil;
 
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.sencha.gxt.data.shared.loader.PagingLoadConfig;
 import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoadResultBean;
 
-public class StatisticsServiceImpl implements StatisticsService {
+public class StatisticsServiceImpl extends RemoteServiceServlet implements StatisticsService {
 
 	@Override
 	public List<StatisticModel> getStatisticsByType(int statisticsType) {
