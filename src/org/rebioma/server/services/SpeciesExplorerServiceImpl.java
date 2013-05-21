@@ -230,7 +230,7 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 					child1.setSuperfamily(parent.getSuperfamily());
 					child1.setFamily(parent.getFamily());
 					child1.setGenus(concerne);
-				}  else if(SpeciesTreeModel.ACCEPTEDSPECIES.equals(temp[1])){
+				}  else if(SpeciesTreeModel.ACCEPTEDSPECIES.equals(temp[1]) || "Species".equals(temp[1])){
 					child1.setKingdom(parent.getKingdom());
 					child1.setPhylum(parent.getPhylum());
 					child1.setClass_(parent.getClass_());
