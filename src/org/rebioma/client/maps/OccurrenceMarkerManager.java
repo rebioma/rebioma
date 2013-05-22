@@ -133,9 +133,14 @@ public class OccurrenceMarkerManager{
 	}
 
 	public static LatLng getPoint(Occurrence occurrence) {
-		double latitude = Double.parseDouble(occurrence.getDecimalLatitude());
-		double longitude = Double.parseDouble(occurrence.getDecimalLongitude());
-		return LatLng.newInstance(latitude, longitude);
+		if(occurrence.getDecimalLatitude() != null && occurrence.getDecimalLongitude() != null){
+			double latitude = Double.parseDouble(occurrence.getDecimalLatitude());
+			double longitude = Double.parseDouble(occurrence.getDecimalLongitude());
+			return LatLng.newInstance(latitude, longitude);
+		}else{
+			return null;
+		}
+		
 	}
 
 	private final Occurrence occurrence;
@@ -144,9 +149,11 @@ public class OccurrenceMarkerManager{
 		this.occurrence = occurrence;
 		MarkerOptions options = optionsManager.getOptions(occurrence);
 		LatLng point = getPoint(occurrence);
+		if(point == null){
+			point = LatLng.newInstance(0, 0);
+		}
 		options.setPosition(point);
 		marker = Marker.newInstance(options);
-		marker.setPosition(point);
 //		super.addMarkerInfoWindowOpenHandler(new MarkerInfoWindowOpenHandler() {
 //			public void onInfoWindowOpen(MarkerInfoWindowOpenEvent event) {
 //				// TODO Auto-generated method stub
