@@ -18,7 +18,7 @@ public class SpeciesTreeModel implements Serializable{
 	public interface SpeciesTreeModelProperties extends
 			PropertyAccess<SpeciesTreeModel> {
 
-		@Path("label")
+		@Path("id")
 		ModelKeyProvider<SpeciesTreeModel> key();
 
 		ValueProvider<SpeciesTreeModel, String> label();
@@ -57,6 +57,7 @@ public class SpeciesTreeModel implements Serializable{
 	public static final String GENUS = "Genus";
 	public static final String ACCEPTEDSPECIES = "Acceptedspecies";
 	public static final String SPECIES = "Species";
+	private String id;
 
 	private String subclass;
 	private String order;
@@ -79,6 +80,15 @@ public class SpeciesTreeModel implements Serializable{
 	private String reviewerName;
 	private Occurrence occurrence;
 	private List<SpeciesTreeModelInfoItem> infos;
+	
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	public List<SpeciesTreeModelInfoItem> getInfos() {
 		return infos;

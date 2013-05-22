@@ -248,6 +248,7 @@ public class SpeciesExplorerServiceImpl extends RemoteServiceServlet implements
 				//child1.setStatus(child1.getLabel() + "Status");
 				//child1.setVernecularName(child1.getLabel() + "vernecularName");
 				//child1.setSynonymisedTaxa(child1.getLabel() + "Synonymised Taxa");
+				child1.setId(child1.getLevel() + "_" + child1.getLabel());
 				listToReturn.add(child1);
 			}
 		} catch (SQLException e) {
