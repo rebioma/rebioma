@@ -7,6 +7,8 @@ import org.rebioma.client.DataPager.PageListener;
 import org.rebioma.client.bean.StatisticModel;
 import org.rebioma.client.gxt.treegrid.StatisticsPanel;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -108,7 +110,7 @@ public class StatisticsTabView extends ComponentView implements ClickHandler, Ch
 	}
 	@Override
 	public void onChange(ChangeEvent arg0) {
-		// TODO Auto-generated method stub
+		
 		
 	}
 
@@ -136,7 +138,7 @@ public class StatisticsTabView extends ComponentView implements ClickHandler, Ch
 		int w = width - 20;
 		
 		mainVp.setWidth(w + "px");
-		//speciesExplorerPanel.getTreeGrid().setWidth(w);
+		statisticsPanel.setWidth(w+ "px");
 		//infoPanel.setWidth(w);
 		Window.enableScrolling(mainVp.getOffsetWidth() - 10 > width);
 

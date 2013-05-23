@@ -157,7 +157,8 @@ public class StatisticsPanel  extends Widget{
 	       cp = new FramedPanel();
 	        cp.setCollapsible(true);
 	        cp.setHeadingText(BY_OWNER);
-	        cp.setPixelSize(730, 400);
+	        cp.setWidth("90%");
+	        cp.setHeight(500);
 	        cp.addStyleName("margin-10");
 	        
 	        VerticalLayoutContainer con = new VerticalLayoutContainer();
@@ -211,7 +212,7 @@ public class StatisticsPanel  extends Widget{
 			@Override
 			public void onSelect(SelectEvent event) {
 				cp.setHeadingText(title);
-				loader.load();
+				loader.load(0,10);
 				
 				
 				

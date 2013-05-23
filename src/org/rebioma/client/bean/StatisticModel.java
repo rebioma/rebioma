@@ -50,6 +50,9 @@ public class StatisticModel implements Serializable{
 	private int nbAwaiting;
 	private int nbQuestionable;
 	private int nbInvalidated;
+	
+	
+
 	private int nbTotal;
 	
 	public StatisticModel(){
@@ -67,7 +70,7 @@ public class StatisticModel implements Serializable{
 		this.nbAwaiting = nbAwaiting;
 		this.nbQuestionable = nbQuestionable;
 		this.nbInvalidated = nbInvalidated;
-		this.nbTotal = nbAwaiting+nbPrivateData+nbPublicData+nbQuestionable+nbReliable+nbInvalidated;
+		this.nbTotal = nbPrivateData+nbPublicData;
 	}
 	public int getIdKey() {
 		return idKey;
@@ -94,7 +97,7 @@ public class StatisticModel implements Serializable{
 		return nbInvalidated;
 	}
 	public int getNbTotal() {
-		return nbAwaiting+nbPrivateData+nbPublicData+nbQuestionable+nbReliable+nbInvalidated;
+		return nbPrivateData+nbPublicData;
 	}
 	public void setIdKey(int idKey) {
 		this.idKey = idKey;
@@ -117,9 +120,7 @@ public class StatisticModel implements Serializable{
 	public void setNbQuestionable(int nbQuestionable) {
 		this.nbQuestionable = nbQuestionable;
 	}
-	public void setInvalidated(int invalidated) {
-		this.nbInvalidated = invalidated;
-	}
+	
 	
 	public void setStatisticType(int statisticType) {
 		this.statisticType = statisticType;
@@ -127,6 +128,14 @@ public class StatisticModel implements Serializable{
 
 	public int getStatisticType() {
 		return statisticType;
+	}
+	
+	public void setNbInvalidated(int nbInvalidated) {
+		this.nbInvalidated = nbInvalidated;
+	}
+
+	public int getNbInvalidated() {
+		return nbInvalidated;
 	}
 	
 	
