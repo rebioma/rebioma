@@ -86,7 +86,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 						"occurrence.validated = FALSE\n" +
 						"GROUP BY  " + colonne +
 						")as tbl\n" +
-						"GROUP BY libelle";
+						"GROUP BY libelle ORDER BY libelle";
 		System.out.println(sql);
 		Session sess = null;		
 		Connection conn =null;
@@ -98,7 +98,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 			st = conn.createStatement();
 			rst = st.executeQuery(sql);
 			while(rst.next()) {
-				if(!rst.getString("libelle").trim().isEmpty()){
+				if(rst.getString("libelle")!=null && !rst.getString("libelle").trim().isEmpty()){
 					StatisticModel obj = new StatisticModel();				
 					obj.setInvalidated(rst.getInt("invalidated"));
 					obj.setNbAwaiting(rst.getInt("awaiting"));
