@@ -98,16 +98,18 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 			st = conn.createStatement();
 			rst = st.executeQuery(sql);
 			while(rst.next()) {
-				StatisticModel obj = new StatisticModel();				
-				obj.setInvalidated(rst.getInt("invalidated"));
-				obj.setNbAwaiting(rst.getInt("awaiting"));
-				obj.setNbPrivateData(rst.getInt("nbprivate"));
-				obj.setNbPublicData(rst.getInt("nbpublic"));
-				obj.setNbQuestionable(rst.getInt("questionnable"));
-				obj.setNbReliable(rst.getInt("reliable"));				
-				obj.setStatisticType(statisticsType);
-				obj.setTitle(rst.getString("libelle"));
-				ret.add(obj);
+				if(!rst.getString("libelle").trim().isEmpty()){
+					StatisticModel obj = new StatisticModel();				
+					obj.setInvalidated(rst.getInt("invalidated"));
+					obj.setNbAwaiting(rst.getInt("awaiting"));
+					obj.setNbPrivateData(rst.getInt("nbprivate"));
+					obj.setNbPublicData(rst.getInt("nbpublic"));
+					obj.setNbQuestionable(rst.getInt("questionnable"));
+					obj.setNbReliable(rst.getInt("reliable"));				
+					obj.setStatisticType(statisticsType);
+					obj.setTitle(rst.getString("libelle"));
+					ret.add(obj);
+				}				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
