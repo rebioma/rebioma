@@ -100,7 +100,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 			while(rst.next()) {
 				if(rst.getString("libelle")!=null && !rst.getString("libelle").trim().isEmpty()){
 					StatisticModel obj = new StatisticModel();				
-					obj.setInvalidated(rst.getInt("invalidated"));
+					obj.setNbInvalidated(rst.getInt("invalidated"));
 					obj.setNbAwaiting(rst.getInt("awaiting"));
 					obj.setNbPrivateData(rst.getInt("nbprivate"));
 					obj.setNbPublicData(rst.getInt("nbpublic"));
