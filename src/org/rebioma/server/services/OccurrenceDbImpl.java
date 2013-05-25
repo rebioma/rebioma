@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Criteria;
+import org.hibernate.Hibernate;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -50,7 +51,7 @@ import org.rebioma.client.services.OccurrenceService.OccurrenceServiceException;
 import org.rebioma.server.services.QueryFilter.InvalidFilter;
 import org.rebioma.server.services.QueryFilter.Operator;
 import org.rebioma.server.upload.Traitement;
-import org.rebioma.server.util.HibernateUtil;
+import org.rebioma.server.util.ManagedSession;
 import org.rebioma.server.util.RecordReviewUtil;
 import org.rebioma.server.util.StringUtil;
 
@@ -418,7 +419,7 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       // }
       return assignOccsCount;
     } catch (Exception e) {
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       e.printStackTrace();
       throw new OccurrenceServiceException("unable to assign " + taxoFieldName + " with value "
           + taxoFieldValue + " for user" + userEmail);
@@ -428,7 +429,8 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void attachClean(Occurrence instance) {
     log.debug("attaching clean Occurrence instance");
     try {
-      HibernateUtil.getCurrentSession().lock(instance, LockMode.NONE);
+      ManagedSession.createNewSessionAndTransaction().lock(instance, LockMode.NONE);
+      //HibernateUtil.getCurrentSession().lock(instance, LockMode.NONE);
       log.debug("attach successful");
     } catch (RuntimeException re) {
       log.error("attach failed", re);
@@ -439,21 +441,23 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void attachDirty(Occurrence instance) {
     log.debug("attaching dirty Occurrence instance");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       instance.setLastUpdated((new Timestamp(System.currentTimeMillis())).toString());
       boolean newOccurrence = instance.getId() == null;
-      HibernateUtil.getCurrentSession().saveOrUpdate(instance);
+      session.saveOrUpdate(instance);
       if (newOccurrence) {
         assignReviewRecords(instance);
       }
       log.debug("attach successful");
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
     } catch (RuntimeException re) {
       log.error("attach failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -466,15 +470,16 @@ public class OccurrenceDbImpl implements OccurrenceDb {
     log.debug("attaching dirty Occurrence instances");
     Occurrence ref = null;
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       int cent = instances.size();
       int i = 0;
       for (Occurrence instance : instances) {
     	  traitement.setTraitement("Attach dirty Occurrences ", cent*1024, ++i*1024);
     	  if(traitement.getCancel()){
     		  log.debug("attaching dirty Occurrence instances");
-    		  HibernateUtil.rollbackTransaction();
+    		  ManagedSession.rollbackTransaction(session);//HibernateUtil.rollbackTransaction();
     		  return;
     	  }
     	  boolean newOccurrence = instance.getId() == null;
@@ -502,13 +507,14 @@ public class OccurrenceDbImpl implements OccurrenceDb {
           }
         }
       }
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       log.debug("attach successful");
     } catch (RuntimeException re) {
       log.info("attach failed (" + ref + ") ", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -517,8 +523,9 @@ public class OccurrenceDbImpl implements OccurrenceDb {
 	    log.debug("attaching dirty Occurrence instances");
 	    Occurrence ref = null;
 	    try {
-	      Session session = HibernateUtil.getCurrentSession();
-	      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+	      //Session session = HibernateUtil.getCurrentSession();
+	      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+	      Session session = ManagedSession.createNewSessionAndTransaction();
 	      for (Occurrence instance : instances) {
 	        boolean newOccurrence = instance.getId() == null;
 	        ref = instance;
@@ -540,21 +547,23 @@ public class OccurrenceDbImpl implements OccurrenceDb {
 	          }
 	        }
 	      }
-	      if (isFirstTransaction) {
-	        HibernateUtil.commitCurrentTransaction();
-	      }
+	      //if (isFirstTransaction) {
+	      //  HibernateUtil.commitCurrentTransaction();
+	      //}
+	      ManagedSession.commitTransaction(session);
 	      log.debug("attach successful");
 	    } catch (RuntimeException re) {
 	      log.info("attach failed (" + ref + ") ", re);
-	      HibernateUtil.rollbackTransaction();
+	      //HibernateUtil.rollbackTransaction();
 	      throw re;
 	    }
 	  }
 
   public boolean checkForReviewedChanged(int occurrenceId) {
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstSession = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstSession = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       Occurrence occ = findById(occurrenceId);
       Boolean oldReviewed = occ.getReviewed();
       Boolean newReviewed = RecordReviewUtil.isRecordReviewed(
@@ -584,12 +593,13 @@ public class OccurrenceDbImpl implements OccurrenceDb {
         // EmailUtil.adminSendEmailTo(user.getEmail(), "", "");
       }
 
-      if (isFirstSession) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstSession) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return isChanged;
     } catch (Exception e) {
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       log.error(e.getMessage(), e);
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -598,16 +608,18 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void delete(Occurrence persistentInstance) {
     log.debug("deleting Occurrence instance");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
-      session.delete(persistentInstance);
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+	  Session session = ManagedSession.createNewSessionAndTransaction();
+	  session.delete(persistentInstance);
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+	  ManagedSession.commitTransaction(session);
       log.debug("delete successful");
     } catch (RuntimeException re) {
       log.error("delete failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -615,18 +627,20 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void delete(Set<Occurrence> persistentInstances) {
     log.debug("deleting Occurrence instance");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       for (Occurrence persistentInstance : persistentInstances) {
         session.delete(persistentInstance);
       }
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       log.debug("delete successful");
     } catch (RuntimeException re) {
       log.error("delete failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -668,8 +682,9 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public List<Occurrence> findByAttributeValues(Set<AttributeValue> attributeValues) {
     log.debug("finding Occurrence instance by AttributeValues");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       Criteria criteria = session.createCriteria(Occurrence.class);
       Criterion orCriterion = null;
       for (AttributeValue attributeValue : attributeValues) {
@@ -682,13 +697,14 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       criteria.add(orCriterion);
       List<Occurrence> results = criteria.list();
       log.debug("find by attributeValue successful, result size: " + results.size());
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return results;
     } catch (RuntimeException re) {
       log.error("find by example failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -696,18 +712,20 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public List<Occurrence> findByExample(Occurrence instance) {
     log.debug("finding Occurrence instance by example");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       List<Occurrence> results = session.createCriteria("org.rebioma.client.bean.Occurrence")
           .add(create(instance)).list();
       log.debug("find by example successful, result size: " + results.size());
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return results;
     } catch (RuntimeException re) {
       log.error("find by example failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -723,22 +741,24 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public Occurrence findById(java.lang.Integer id) {
     log.debug("getting Occurrence instance with id: " + id);
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
-      Occurrence instance = (Occurrence) HibernateUtil.getCurrentSession().get(
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
+      Occurrence instance = (Occurrence) session.get(
           "org.rebioma.client.bean.Occurrence", id);
       if (instance == null) {
         log.debug("get successful, no instance found");
       } else {
         log.debug("get successful, instance found");
       }
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return instance;
     } catch (RuntimeException re) {
       log.error("get failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -820,8 +840,9 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   @Override
   public List<OccurrenceReview> getOccurrenceReviewsOf(int occurrenceId) {
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirst = HibernateUtil.beginTransaction(session);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirst = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       List<RecordReview> recordReviews = recordReviewDb.getRecordReviewsByOcc(occurrenceId);
       List<OccurrenceReview> occurrenceReviews = new ArrayList<OccurrenceReview>();
       if (recordReviews != null) {
@@ -832,13 +853,14 @@ public class OccurrenceDbImpl implements OccurrenceDb {
               .getReviewed(), recordReview.getReviewedDate()));
         }
       }
-      if (isFirst) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirst) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return occurrenceReviews;
 
     } catch (Exception e) {
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw new RuntimeException(e.getMessage(), e);
     }
 
@@ -847,17 +869,19 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public Occurrence merge(Occurrence detachedInstance) {
     log.debug("merging Occurrence instance");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
-      Occurrence result = (Occurrence) HibernateUtil.getCurrentSession().merge(detachedInstance);
+      //Session session = HibernateUtil.getCurrentSession();
+      //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
+      Occurrence result = (Occurrence) session.merge(detachedInstance);
       log.debug("merge successful");
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      //if (isFirstTransaction) {
+      //  HibernateUtil.commitCurrentTransaction();
+      //}
+      ManagedSession.commitTransaction(session);
       return result;
     } catch (RuntimeException re) {
       log.error("merge failed", re);
-      HibernateUtil.rollbackTransaction();
+      //HibernateUtil.rollbackTransaction();
       throw re;
     }
   }
@@ -865,7 +889,8 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void persist(Occurrence transientInstance) {
     log.debug("persisting Occurrence instance");
     try {
-      HibernateUtil.getCurrentSession().persist(transientInstance);
+      ManagedSession.createNewSession().persist(transientInstance);	
+      //HibernateUtil.getCurrentSession().persist(transientInstance);
       log.debug("persist successful");
     } catch (RuntimeException re) {
       log.error("persist failed", re);
@@ -992,15 +1017,11 @@ public class OccurrenceDbImpl implements OccurrenceDb {
 
   public void resetReviews() {
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirst = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       session.createQuery("update Occurrence o set o.reviewed=null").executeUpdate();
-      if (isFirst) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
     } catch (Exception e) {
       log.error(e.getMessage(), e);
-      HibernateUtil.rollbackTransaction();
     }
   }
 
@@ -1052,8 +1073,7 @@ public class OccurrenceDbImpl implements OccurrenceDb {
     }
     Integer id;
     Map<Integer, Occurrence> testDuplicate = new HashMap<Integer, Occurrence>();
-    Session session = HibernateUtil.getCurrentSession();
-    boolean isFirst = HibernateUtil.beginTransaction(session);
+    Session session = ManagedSession.createNewSessionAndTransaction();
 
     UserDb userDb = DBFactory.getUserDb();
     RecordReviewDb recordReviewDb = DBFactory.getRecordReviewDb();
@@ -1175,11 +1195,8 @@ public class OccurrenceDbImpl implements OccurrenceDb {
         message += "[]";
       }
       message += "}";
-      if (isFirst) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
     } catch (Exception e) {
-      HibernateUtil.rollbackTransaction();
       log.error(e.getMessage(), e);
     }
     return message;
@@ -1279,7 +1296,11 @@ public class OccurrenceDbImpl implements OccurrenceDb {
               criterion = Restrictions.eq(filter.column, value);
             }
           } else {
-            criterion = Restrictions.eq(filter.column, filter.getValue());
+        	// {wd} on utilise "upper()" si type column = String 
+          	if(StringUtil.isType(Occurrence.class, filter.column, String.class))
+          		criterion = Restrictions.sqlRestriction("upper({alias}." + filter.column + ") = upper(?)", filter.getValue(), Hibernate.STRING);
+              else
+          		criterion = Restrictions.eq(filter.column, filter.getValue());
           }
           break;
         case NOT_CONTAIN:
@@ -1582,20 +1603,18 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       ResultFilter resultFilter, int tryCount) {
 
     log.debug("deleting Occurrences instances by query.");
-    Session session = HibernateUtil.getCurrentSession();
+    Session session = ManagedSession.createNewSessionAndTransaction();
     int deletedRecord = 0;
     try {
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
       String deleteQuery = createDeleteQuery(session.createCriteria(Occurrence.class),
           searchFilters, user, resultFilter, tryCount);
       log.info(deleteQuery);
       deletedRecord = session.createQuery(deleteQuery).executeUpdate();
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
     } catch (RuntimeException re) {
       log.error("delete by query failed", re);
-      HibernateUtil.rollbackTransaction();
+      ManagedSession.rollbackTransaction(session);
+      //HibernateUtil.rollbackTransaction();
       throw re;
     } finally {
       // session.close();
@@ -1607,8 +1626,7 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       int tryCount) throws Exception {
     log.debug("finding Occurrence instances by query.");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       List<Occurrence> results = null;
       Criteria criteria = session.createCriteria(Occurrence.class);
       OccurrenceFilter userReviewFilter = null;
@@ -1687,17 +1705,13 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       
       // filters.addAll(removedFilters);
       log.debug("find by example successful, result size: " + results.size());
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
       return results;
     } catch (RuntimeException re) {
-      HibernateUtil.rollbackTransaction();
       log.error("find by example failed", re);
       re.printStackTrace();
       throw re;
     } catch (Exception e) {
-      HibernateUtil.rollbackTransaction();
       log.error("unexpected error: ", e);
       e.printStackTrace();
       throw e;
@@ -1709,8 +1723,7 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       int tryCount) throws Exception {
     log.debug("finding Occurrence instances by query.");
     try {
-      Session session = HibernateUtil.getCurrentSession();
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+      Session session = ManagedSession.createNewSessionAndTransaction();
       List<Integer> results = null;
       Criteria criteria = session.createCriteria(Occurrence.class).setProjection(Projections.id());
       OccurrenceFilter userReviewFilter = null;
@@ -1724,9 +1737,9 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       for (OrderKey orderKey : orderingMap) {
         String property = orderKey.getAttributeName();
         if (orderKey.isAsc()) {
-          criteria.addOrder(Order.asc(getOccurrencePropertyName(property)));
+          //criteria.addOrder(Order.asc(getOccurrencePropertyName(property)));
         } else {
-          criteria.addOrder(Order.desc(getOccurrencePropertyName(property)));
+          //criteria.addOrder(Order.desc(getOccurrencePropertyName(property)));
         }
       }
       // Sets the start, limit, and order by accepted species:
@@ -1767,9 +1780,7 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       }
       // filters.addAll(removedFilters);
       log.debug("find by example successful, result size: " + results.size());
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
       return results;
     } catch (RuntimeException re) {
       log.error("find by example failed", re);
@@ -1783,23 +1794,21 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   }
 
   private List<Integer> findOccIdsByAttributeValue(AttributeValue attributeValue) {
-    Session session = HibernateUtil.getCurrentSession();
-    HibernateUtil.beginTransaction(session);
+    Session session = ManagedSession.createNewSessionAndTransaction();
     Query query = session.createQuery("select id from Occurrence o where o."
         + attributeValue.getAttribute() + "='" + attributeValue.getValue() + "'");
     List<Integer> ids = query.list();
-    HibernateUtil.commitCurrentTransaction();
+    ManagedSession.commitTransaction(session);
     return ids;
   }
 
   private List<Integer> findValidatedOccIdsByAttributeValue(AttributeValue attributeValue) {
-    Session session = HibernateUtil.getCurrentSession();
-    HibernateUtil.beginTransaction(session);
+    Session session = ManagedSession.createNewSessionAndTransaction();
     Query query = session.createQuery("select id from Occurrence o where o."
         + attributeValue.getAttribute() + "='" + attributeValue.getValue()
         + "' and o.validated=true");
     List<Integer> ids = query.list();
-    HibernateUtil.commitCurrentTransaction();
+    ManagedSession.commitTransaction(session);
     return ids;
   }
 
@@ -1945,11 +1954,10 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   }
 
   private void resetOccurrenceReviewedStatus(int id) {
-    Session session = HibernateUtil.getCurrentSession();
-    HibernateUtil.beginTransaction(session);
+    Session session = ManagedSession.createNewSessionAndTransaction();
     Query query = session.createQuery("update Occurrence set reviewed=NULL where id=" + id);
     query.executeUpdate();
-    HibernateUtil.commitCurrentTransaction();
+    ManagedSession.commitTransaction(session);
   }
 
   /**
@@ -1967,17 +1975,14 @@ public class OccurrenceDbImpl implements OccurrenceDb {
       Set<OccurrenceFilter> updateFilters, ResultFilter resultFilter, int tryCount) {
 
     log.debug("updating Occurrences instances by query.");
-    Session session = HibernateUtil.getCurrentSession();
+    Session session = ManagedSession.createNewSessionAndTransaction();
     try {
-      boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
       String updateQuery = createUpdateQuery(session.createCriteria(Occurrence.class),
           searchFilters, updateFilters, user, resultFilter, tryCount);
       log.info(updateQuery);
       int updatedRecords = session.createQuery(updateQuery).executeUpdate();
 
-      if (isFirstTransaction) {
-        HibernateUtil.commitCurrentTransaction();
-      }
+      ManagedSession.commitTransaction(session);
       return updatedRecords;
     } catch (RuntimeException re) {
       log.error("update by query failed", re);
@@ -1994,21 +1999,21 @@ public class OccurrenceDbImpl implements OccurrenceDb {
   public void resetRecordReview(Occurrence occurrence, boolean isStable) {
   	 log.debug("attaching dirty Occurrence instance");
   	    try {
-  	    	Session session = HibernateUtil.getCurrentSession();
-		    boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
+  	    	//Session session = HibernateUtil.getCurrentSession();
+		  Session session = ManagedSession.createNewSession();
+		  //boolean isFirstTransaction = HibernateUtil.beginTransaction(session);
   	      occurrence.setLastUpdated((new Timestamp(System.currentTimeMillis())).toString());
   	      occurrence.setReviewed(null);
   	      occurrence.setStability(isStable);
-  	   HibernateUtil.getCurrentSession().saveOrUpdate(occurrence);
+  	      ManagedSession.commitTransaction(session);
 	   
   	      assignReviewRecords(occurrence);
   	      log.debug("attach successful");
-  	    if (isFirstTransaction) {
-  	        HibernateUtil.commitCurrentTransaction();
-  	      }
+  	      ManagedSession.commitTransaction(session);
+  	      
   	    } catch (RuntimeException re) {
   	      log.error("attach failed", re);
-  	      HibernateUtil.rollbackTransaction();
+  	      //HibernateUtil.rollbackTransaction();
   	      throw re;
   	    }
   	

@@ -1111,8 +1111,9 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     if (height <= 0) {
       height = 1;
     }
+    int w = width - 20;
     hsp.setSplitPosition("30%");
-    mainVp.setPixelSize(width, height);
+    mainVp.setPixelSize(w, height);
 //    map.checkResizeAndCenter();
   }
 

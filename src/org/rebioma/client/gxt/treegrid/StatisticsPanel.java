@@ -49,7 +49,7 @@ public class StatisticsPanel  extends Widget{
 	//private ContentPanel root;
 	public static final int NUM_PAGE = 9;
 	private int intStatisticType = 1;
-	private String BY_OWNER = "Numbers of occurrences per data manager user ";
+	private String BY_OWNER = "Numbers of occurrences per data manager (owner)";
 	private String BY_INSTITUTION = "Numbers of occurrences  per data provider institution";
 	private String BY_COLLECTION = "Numbers of occurrences per collection code";
 	private String BY_YEAR = "Numbers of occurrences per year";

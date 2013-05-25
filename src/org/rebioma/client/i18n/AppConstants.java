@@ -3037,7 +3037,8 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   @Key("goButton")
   String goButton();
   
-  @DefaultStringValue("Statistics")
+  //Tax: pour le moment
+  @DefaultStringValue("Data dashboard")
   @Key("statistics")
   String Statistics();
 
@@ -3055,7 +3056,7 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   String MoreInformations();
 
  
-  @DefaultStringValue("Numbers of occurrences per data manager user ")
+  @DefaultStringValue("Numbers of occurrences per data manager (owner) ")
   @Key("statsPerManagerUser")
   String statsPerManagerUser();
   

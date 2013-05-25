@@ -55,6 +55,7 @@ import com.google.gwt.maps.client.overlays.Marker;
 import com.google.gwt.maps.client.overlays.MarkerImage;
 import com.google.gwt.maps.client.overlays.MarkerOptions;
 import com.google.gwt.user.client.Cookies;
+import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -1654,16 +1655,16 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 		}
 	}
 
-	private static final String WAITING_IMG_URL = "images/waiting.jpg";
+  private static final String WAITING_IMG_URL = "images/waiting.png";
 
-	private static final String THUMB_UP_URL = "images/thumb_up.jpg";
+  private static final String THUMB_UP_URL = "images/thumb_up.png";
 
-	private static final String THUMB_DOWN_URL = "images/question_mark.jpg";
-	private static final String REVIEWER_TABLE_HEAER[] = new String[] {
-			constants.Name(), constants.Email(), constants.Reviewed(),
-			constants.ReviewDate() };
-	private static final String REVIEWER_TABLE_HEADER_CSS[] = new String[] {
-			"name", "email", "reviewed", "reviewed_date" };
+  private static final String THUMB_DOWN_URL = "images/question_mark.png";
+  private static final String REVIEWER_TABLE_HEAER[] = new String[] {
+      constants.Name(), constants.Email(), constants.Reviewed(),
+      constants.ReviewDate() };
+  private static final String REVIEWER_TABLE_HEADER_CSS[] = new String[] {
+      "name", "email", "reviewed", "reviewed_date" };
 
 	/**
 	 * Default style name for this widget.
@@ -2261,7 +2262,7 @@ public class DetailView extends ComponentView implements OpenHandler<TreeItem>,
 			height = 1;
 		}
 		final int h = height;
-		final int w = width;
+	    final int w = width -22;
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 
 			public void execute() {
