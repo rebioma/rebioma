@@ -146,8 +146,8 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 	@Override
 	public List<StatisticModel> getStatisticDetails(
 			StatisticModel statisticModel) {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO TEST
+		return getStatisticsByType(0);
 	}
 
 	@Override
@@ -165,6 +165,47 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 		}         
 		return new PagingLoadResultBean<StatisticModel>  
 			(subListToShow, statisticModels.size(),config.getOffset());  
+	}
+
+	/*@Override
+	public List<StatisticModel> getStatisticsByType(int statisticsType) {
+		List<StatisticModel> list = new ArrayList<StatisticModel>();
+		
+		list.add(new StatisticModel(1,1, "Rakoto frah", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(2,1, "Rakoto frahq", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(3,1, "Rakoto frahw", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(4,1, "Rakoto frahr", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(5,1, "Rakoto fraht", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(6,1, "Rakoto frahf", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(7,1, "Rakoto frahh", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(8,1, "Rakoto frahj", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(9,1, "Bema kelyd", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(10,1, "Bema kelys", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(11,1, "Bema kelya", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(12,1, "Bema kelyz", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(13,1, "Bema kelyp", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(14,1, "Bema kelym", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(15,1, "Bema kelyg", 2, 3, 4, 5, 6, 7));
+		list.add(new StatisticModel(16,1, "Bema kelyh", 2, 3, 4, 5, 6, 7));
+	
+	return list;
+	}*/
+
+	@Override
+	public PagingLoadResult<StatisticModel> getStatisticDetails(
+			StatisticModel statisticModel, PagingLoadConfig config) {
+		List<StatisticModel> statisticModels = getStatisticDetails(statisticModel);
+		int start = config.getOffset();
+		int limit = statisticModels.size();
+		ArrayList<StatisticModel> subListToShow = new ArrayList<StatisticModel>(); 
+		if (config.getLimit() > 0) {  
+			limit = Math.min(start + config.getLimit(), limit);  
+		}  
+		for (int i = config.getOffset(); i < limit; i++) {        
+			subListToShow.add(statisticModels.get(i));
+		}         
+		return new PagingLoadResultBean<StatisticModel>  
+			(subListToShow, statisticModels.size(),config.getOffset()); 
 	}
 
 }
