@@ -47,7 +47,7 @@ public class StatisticsPanel  extends Widget{
 	.create(StatisticsService.class);
 	
 	//private ContentPanel root;
-	public static final int NUM_PAGE = 9;
+	public static final int NUM_PAGE = 25;
 	private int intStatisticType = 1;
 	private String BY_OWNER = "Numbers of occurrences per data manager (owner)";
 	private String BY_INSTITUTION = "Numbers of occurrences  per data provider institution";
@@ -116,12 +116,15 @@ public class StatisticsPanel  extends Widget{
 	      TextButton save  = new TextButton("Go");
 	      toolBarHaut.add(type);
 	      toolBarHaut.add(save);
+	      TextButton details  = new TextButton("Show details");
+	     
+	      toolBarHaut.add(details);
 	  	
 	  	loader = new PagingLoader<PagingLoadConfig, PagingLoadResult<StatisticModel>>(proxy);
 	  	    loader.setRemoteSort(true);
 	  	    loader.addLoadHandler(new LoadResultListStoreBinding<PagingLoadConfig, StatisticModel, PagingLoadResult<StatisticModel>>(store));
 	  	    
-	  	  final PagingToolBar toolBar = new PagingToolBar(10);
+	  	  final PagingToolBar toolBar = new PagingToolBar(NUM_PAGE);
 	      toolBar.getElement().getStyle().setProperty("borderBottom", "none");
 	      toolBar.bind(loader);
 	       
@@ -212,7 +215,20 @@ public class StatisticsPanel  extends Widget{
 			@Override
 			public void onSelect(SelectEvent event) {
 				cp.setHeadingText(title);
-				loader.load(0,10);
+				loader.load(0,NUM_PAGE);
+			}
+		});
+	      //getAnotherStatistics
+	      details.addSelectHandler(new SelectHandler() {
+			
+			@Override
+			public void onSelect(SelectEvent event) {
+				
+				
+				StatisticsDialog dialog = new StatisticsDialog(grid.getSelectionModel().getSelectedItem());
+				dialog.show();
+				
+				
 				
 				
 				
