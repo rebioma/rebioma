@@ -23,5 +23,6 @@ public interface StatisticsService extends RemoteService{
 	List<StatisticModel> getStatisticsByType(int statisticsType);
 	List<StatisticModel> getStatisticDetails(StatisticModel statisticModel);
 	PagingLoadResult<StatisticModel> getStatisticsByType(int statisticsType, PagingLoadConfig config);
+	PagingLoadResult<StatisticModel> getStatisticDetails(StatisticModel statisticModel, PagingLoadConfig config);
 
 }
