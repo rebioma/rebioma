@@ -3131,9 +3131,9 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   @DefaultStringValue("Mailing system")
   @Key("mailingSystem")
   String mailingSystem();
-  /**mailViewInfo
-   * Translated "Occurrence Comment".
-   * 
-   * @return translated "Occurrence Comments"
-   */
+
+  @DefaultStringValue("Mailing")
+  @Key("mailing")
+  String mailing();
+  
 }

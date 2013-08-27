@@ -160,7 +160,7 @@ public class StatisticsPanel  extends Widget{
 	       cp = new FramedPanel();
 	        cp.setCollapsible(true);
 	        cp.setHeadingText(BY_OWNER);
-	        cp.setWidth("90%");
+	        cp.setWidth("100%");
 	        cp.setHeight(500);
 	        cp.addStyleName("margin-10");
 	        
