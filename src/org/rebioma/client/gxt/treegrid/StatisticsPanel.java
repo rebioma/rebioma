@@ -17,6 +17,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.IdentityValueProvider;
+import com.sencha.gxt.core.client.Style.SelectionMode;
 import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
@@ -34,10 +35,10 @@ import com.sencha.gxt.widget.core.client.event.CellClickEvent.CellClickHandler;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.SimpleComboBox;
+import com.sencha.gxt.widget.core.client.grid.CheckBoxSelectionModel;
 import com.sencha.gxt.widget.core.client.grid.ColumnConfig;
 import com.sencha.gxt.widget.core.client.grid.ColumnModel;
 import com.sencha.gxt.widget.core.client.grid.Grid;
-import com.sencha.gxt.widget.core.client.grid.GridSelectionModel;
 import com.sencha.gxt.widget.core.client.toolbar.LabelToolItem;
 import com.sencha.gxt.widget.core.client.toolbar.PagingToolBar;
 import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
@@ -72,6 +73,10 @@ public class StatisticsPanel  extends Widget{
 		
 		
 		List<ColumnConfig<StatisticModel, ?>> ccs = new LinkedList<ColumnConfig<StatisticModel, ?>>();
+		 IdentityValueProvider<StatisticModel> identity = new IdentityValueProvider<StatisticModel>();
+		  final CheckBoxSelectionModel<StatisticModel> selectionModel = new CheckBoxSelectionModel<StatisticModel>(identity);
+		
+		ccs.add(selectionModel.getColumn());
 		ccs.add(new ColumnConfig<StatisticModel, String>(
 				statisticsModelProperties.title(), 150, ""));
 		ccs.add(new ColumnConfig<StatisticModel, Integer>(
@@ -128,7 +133,6 @@ public class StatisticsPanel  extends Widget{
 	      toolBar.getElement().getStyle().setProperty("borderBottom", "none");
 	      toolBar.bind(loader);
 	       
-	      IdentityValueProvider<StatisticModel> identity = new IdentityValueProvider<StatisticModel>();
 	    
 	  	  /*ListStore<StatisticModel> store = new ListStore<StatisticModel>(statisticsModelProperties.key());
 		      store.addAll(StatisticModel.getstats());*/
@@ -156,7 +160,8 @@ public class StatisticsPanel  extends Widget{
 	        grid.setLoadMask(true);
 	        grid.setLoader(loader);
 	     
-	        
+	        grid.setSelectionModel(selectionModel);
+	        grid.getSelectionModel().setSelectionMode(SelectionMode.SIMPLE);
 	       cp = new FramedPanel();
 	        cp.setCollapsible(true);
 	        cp.setHeadingText(BY_OWNER);
@@ -183,7 +188,8 @@ public class StatisticsPanel  extends Widget{
 			
 			@Override
 			public void onCellClick(CellClickEvent event) {
-				grid.setSelectionModel(new GridSelectionModel<StatisticModel>());
+				int idx = event.getRowIndex();
+				grid.getSelectionModel().select(idx, false);
 				
 			}
 		});
@@ -223,9 +229,9 @@ public class StatisticsPanel  extends Widget{
 			
 			@Override
 			public void onSelect(SelectEvent event) {
+				StatisticModel model = grid.getSelectionModel().getSelectedItem();
 				
-				
-				StatisticsDialog dialog = new StatisticsDialog(grid.getSelectionModel().getSelectedItem());
+				StatisticsDialog dialog = new StatisticsDialog(model);
 				dialog.show();
 				
 				

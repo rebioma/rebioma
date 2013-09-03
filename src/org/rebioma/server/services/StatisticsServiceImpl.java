@@ -147,7 +147,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 	public List<StatisticModel> getStatisticDetails(
 			StatisticModel statisticModel) {
 		
-		return getStatisticsByType(0);
+		return getStatisticDetails(statisticModel.getStatisticType(), statisticModel.getTitle());
 	}
 
 	@Override
