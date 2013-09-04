@@ -211,7 +211,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 	@Override
 	public List<StatisticModel> getStatisticDetails(int statisticsType,
 			String libelle) {
-		
+		libelle=libelle.replaceAll("'", "\'");
 		List<StatisticModel> ret = new ArrayList<StatisticModel>();
 		String colonne="";
 		switch (statisticsType) {
