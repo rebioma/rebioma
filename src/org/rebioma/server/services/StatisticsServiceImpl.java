@@ -290,7 +290,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 			conn=sess.connection();		
 			st = conn.prepareStatement(sql);
 			st.setString(1, libelle);
-			rst = st.executeQuery(sql);
+			rst = st.executeQuery();
 			while(rst.next()) {
 				//if(rst.getString("libelle")!=null && !rst.getString("libelle").trim().isEmpty()){
 					StatisticModel obj = new StatisticModel();				
