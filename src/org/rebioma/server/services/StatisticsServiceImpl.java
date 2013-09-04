@@ -1,6 +1,7 @@
 package org.rebioma.server.services;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -211,7 +212,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 	@Override
 	public List<StatisticModel> getStatisticDetails(int statisticsType,
 			String libelle) {
-		libelle=libelle.replaceAll("'", "\'");
+		
 		List<StatisticModel> ret = new ArrayList<StatisticModel>();
 		String colonne="";
 		switch (statisticsType) {
@@ -277,17 +278,18 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 						"occurrence.validated = FALSE\n" +
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						")as tbl\n" +
-						" WHERE libelle='"+libelle+"'" +
+						" WHERE libelle= ? " +
 						"GROUP BY  acceptedclass ORDER BY  acceptedclass";
 		System.out.println(sql);
 		Session sess = null;		
 		Connection conn =null;
-		Statement st=null;
+		PreparedStatement st=null;
 		ResultSet rst=null;
 		try {
 			sess=HibernateUtil.getSessionFactory().openSession(); 
 			conn=sess.connection();		
-			st = conn.createStatement();
+			st = conn.prepareStatement(sql);
+			st.setString(1, libelle);
 			rst = st.executeQuery(sql);
 			while(rst.next()) {
 				//if(rst.getString("libelle")!=null && !rst.getString("libelle").trim().isEmpty()){
