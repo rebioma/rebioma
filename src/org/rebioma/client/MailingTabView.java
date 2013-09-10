@@ -32,10 +32,11 @@ public class MailingTabView extends ComponentView implements ClickHandler {
 		super(parent, false);
 		verticalPanel = new VerticalPanel();
 		mailingTab = new MailingTab().getWidget(); 
-		mailingTab.setWidth("100%");
-		mailingTab.setHeight((Window.getClientHeight() - 115)  + "px");
+//		mailingTab.setWidth("100%");
+//		mailingTab.setHeight((Window.getClientHeight() - 115)  + "px");
 	    verticalPanel.add(mailingTab);
 		initWidget(verticalPanel);
+		resize(Window.getClientWidth(), (Window.getClientHeight() - 115));
 		History.addValueChangeHandler(this);
 	}
 	

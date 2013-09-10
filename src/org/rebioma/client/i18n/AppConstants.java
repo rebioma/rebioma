@@ -3132,7 +3132,7 @@ public interface AppConstants extends com.google.gwt.i18n.client.ConstantsWithLo
   @Key("mailingSystem")
   String mailingSystem();
 
-  @DefaultStringValue("Mailing")
+  @DefaultStringValue("Mailing  system")
   @Key("mailing")
   String mailing();
   

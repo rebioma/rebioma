@@ -10,19 +10,18 @@ import org.rebioma.client.gxt.treegrid.MailTabPanel.MailingResources;
 import org.rebioma.client.services.MailingService;
 import org.rebioma.client.services.MailingServiceAsync;
 
-import com.google.gwt.cell.client.DateCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Widget;
 import com.sencha.gxt.cell.core.client.form.ComboBoxCell.TriggerAction;
 import com.sencha.gxt.core.client.IdentityValueProvider;
 import com.sencha.gxt.core.client.Style.SelectionMode;
+import com.sencha.gxt.core.client.util.Margins;
 import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.ListStore;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
@@ -33,9 +32,11 @@ import com.sencha.gxt.data.shared.loader.PagingLoadResult;
 import com.sencha.gxt.data.shared.loader.PagingLoader;
 import com.sencha.gxt.widget.core.client.FramedPanel;
 import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.BorderLayoutContainer.BorderLayoutData;
+import com.sencha.gxt.widget.core.client.container.MarginData;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
 import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
-import com.sencha.gxt.widget.core.client.event.RefreshEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent;
 import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
 import com.sencha.gxt.widget.core.client.form.DateField;
@@ -55,7 +56,7 @@ import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
  
 public class MailingTab {
  
-	private FramedPanel cp;
+	private BorderLayoutContainer blc;
 	private DateField startDate;
 	private DateField endDate;
 	private SimpleComboBox<String> box;
@@ -222,22 +223,36 @@ public class MailingTab {
 	    grid.setLoadMask(true);
 	    grid.setLoader(loader);
 	    
-	    cp = new FramedPanel();
+	    blc = new BorderLayoutContainer();
+	    blc.setBorders(true);
 //	    cp.setCollapsible(true);
 //	    cp.setHeadingText("Paging Grid Example");
-	    cp.setHeaderVisible(false);
-	    cp.setWidth("100%");
-	    cp.setHeight("400px");
-	    cp.addStyleName("margin-10");
+//	    blc.setHeaderVisible(false);
+	    blc.setWidth("100%");
+	    blc.setHeight("400px");
+	    blc.addStyleName("margin-10");
 	 
 	    VerticalLayoutContainer con = new VerticalLayoutContainer();
 	    con.setBorders(true);
 	    con.add(toolBar, new VerticalLayoutData(1, -1));
 	    con.add(grid, new VerticalLayoutData(1, 1));
 	    con.add(pagingToolBar, new VerticalLayoutData(1, -1));
-	    cp.setWidget(con);
+	    
+	    BorderLayoutData eastData = new BorderLayoutData(350);
+	    eastData.setMargins(new Margins(5, 5, 5, 5));
+	    eastData.setCollapsible(true);
+	    eastData.setSplit(true);
+	    
+	    MarginData centerData = new MarginData();
+	    centerData.setMargins(new Margins(5, 0, 5, 5));
+	    FramedPanel frame = new FramedPanel();
+	    frame.add(con);
+	    blc.setCenterWidget(frame, centerData);
+	    blc.setEastWidget(new MailTabPanel().getWidget(), eastData);
+	    
+//	    blc.setWidget(con,);
 	 
-	    return cp;
+	    return blc;
 
 	}
 	

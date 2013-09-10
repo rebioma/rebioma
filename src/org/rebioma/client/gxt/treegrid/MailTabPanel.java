@@ -58,15 +58,16 @@ public class MailTabPanel {
 	private TextButton refresh = new TextButton("Refresh");
     private TextButton save = new TextButton("Save");
     private List<String> lFrequency = Arrays.asList(new String[]{"Weekly", "2 weeks", "Monthly"}); 
-    
+    private FramedPanel form2;
 	public Widget getWidget(){
-		FramedPanel form2 = new FramedPanel();
+		form2 = new FramedPanel();
 	    form2.setHeadingText("");
-	    form2.setWidth(350);
+	    form2.setWidth("100%");
 	    
 	    FieldSet fieldSet = new FieldSet();
 	    fieldSet.setHeadingText("Emailing Setting");
 	    fieldSet.setCollapsible(true);
+	    fieldSet.setHeight(155);
 	    form2.add(fieldSet);
 	    
 	    
