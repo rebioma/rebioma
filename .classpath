@@ -36,11 +36,11 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/smtp.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/taxonomic-auth.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/tl4j-1.1.0.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/gxt-3.0.1.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/gxt-3.0.1.jar" sourcepath="D:/admin/.m2/repository/com/sencha/gxt/gxt/3.0.1/gxt-3.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-maps-api-3.10.0-alpha-6.jar" sourcepath="C:/Mikajy/UTILITAIRE_PROJET/MAVEN/REPOSITORY/com/github/branflake2267/gwt-maps-api/3.10.0-alpha-6/gwt-maps-api-3.10.0-alpha-6-sources.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-ajaxloader-javadoc.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-ajaxloader.jar"/>
-	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER/GWT"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
