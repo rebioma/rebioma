@@ -232,7 +232,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 			break;
 		}
 		
-		String sql = "SELECT acceptedclass,sum(\"private\") as nbprivate,sum(\"public\") as nbpublic,sum(reliable) as reliable, sum(awaiting) as awaiting,sum(questionnable) as questionnable,sum(invalidated) as invalidated,\n" +
+		String sql = "SELECT UPPER(acceptedclass) as acceptedclass,sum(\"private\") as nbprivate,sum(\"public\") as nbpublic,sum(reliable) as reliable, sum(awaiting) as awaiting,sum(questionnable) as questionnable,sum(invalidated) as invalidated,\n" +
 						"0 as \"all\"\n" +
 						"FROM \n" +
 						"( \n" +
@@ -243,35 +243,35 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 						"occurrence.\"public\" = FALSE \n" +
 						"GROUP BY " + colonne + " ,acceptedclass " +
 						"UNION\n" +
-						"SELECT   acceptedclass, "+colonne+"  as libelle, \n" +
+						"SELECT   acceptedclass , "+colonne+"  as libelle, \n" +
 						" 0 as \"private\",count(*) as \"public\",0 as reliable,0 as awaiting,0 as questionnable,0 as invalidated,0 as \"all\"\n" +
 						"FROM occurrence LEFT JOIN \"user\" u ON u.email=occurrence.email\n" +
 						" WHERE 1=1 AND \n" +
 						"occurrence.\"public\" = TRUE \n" +
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						"UNION\n" +
-						"SELECT   acceptedclass, "+colonne+"  as libelle, \n" +
+						"SELECT   acceptedclass , "+colonne+"  as libelle, \n" +
 						" 0 as \"private\",0 as \"public\",count(*)  as reliable,0 as awaiting,0 as questionnable,0 as invalidated,0 as \"all\"\n" +
 						"FROM occurrence  LEFT JOIN \"user\" u ON u.email=occurrence.email\n" +
 						" WHERE 1=1 AND \n" +
 						"occurrence.reviewed = true\n" +
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						"UNION\n" +
-						"SELECT  acceptedclass, "+colonne+"  as libelle, \n" +
+						"SELECT  acceptedclass , "+colonne+"  as libelle, \n" +
 						" 0 as \"private\",0 as \"public\", 0 as reliable,count(*) as awaiting,0 as questionnable,0 as invalidated,0 as \"all\"\n" +
 						"FROM occurrence  LEFT JOIN \"user\" u ON u.email=occurrence.email\n" +
 						" WHERE 1=1 AND \n" +
 						"occurrence.reviewed IS NULL AND occurrence.validated=TRUE\n" +
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						"UNION\n" +
-						"SELECT   acceptedclass, "+colonne+"  as libelle, \n" +
+						"SELECT   acceptedclass , "+colonne+"  as libelle, \n" +
 						" 0 as \"private\",0 as \"public\", 0 as reliable,0 as awaiting,count(*)  as questionnable,0 as invalidated,0 as \"all\"\n" +
 						"FROM occurrence  LEFT JOIN \"user\" u ON u.email=occurrence.email\n" +
 						" WHERE 1=1 AND \n" +
 						"occurrence.reviewed = FALSE\n" +
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						"UNION\n" +
-						"SELECT acceptedclass, "+colonne+"  as libelle, \n" +
+						"SELECT acceptedclass , "+colonne+"  as libelle, \n" +
 						" 0 as \"private\",0 as \"public\", 0 as reliable,0 as awaiting,0 as questionnable,count(*) as invalidated, 0 as \"all\"\n" +
 						"FROM occurrence  LEFT JOIN \"user\" u ON u.email=occurrence.email\n" +
 						" WHERE 1=1 AND \n" +
@@ -279,7 +279,7 @@ public class StatisticsServiceImpl extends RemoteServiceServlet implements Stati
 						"GROUP BY  " + colonne +" ,acceptedclass " +
 						")as tbl\n" +
 						" WHERE libelle= ? " +
-						"GROUP BY  acceptedclass ORDER BY  acceptedclass";
+						"GROUP BY  upper(acceptedclass) ORDER BY  upper(acceptedclass)";
 		System.out.println(sql);
 		Session sess = null;		
 		Connection conn =null;
