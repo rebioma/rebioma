@@ -7,7 +7,8 @@ import java.util.List;
 import org.rebioma.client.services.MailingService;
 import org.rebioma.client.services.MailingServiceAsync;
 
-import com.google.gwt.core.shared.GWT;
+//import com.google.gwt.core.shared.GWT;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
