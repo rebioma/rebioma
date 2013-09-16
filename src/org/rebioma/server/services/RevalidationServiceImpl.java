@@ -202,8 +202,9 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 			String genus = occurrence.getGenus();
 			String se = occurrence.getSpecificEpithet();
 			String nc = occurrence.getNomenclaturalCode();
+			String ir = occurrence.getInfraspecificRank();
 			String ie = occurrence.getInfraspecificEpithet();
-			Classification c = taxonomicAuthority.classify(genus, se, ie, nc); /*
+			Classification c = taxonomicAuthority.classify(genus, se, ir, ie, nc); /*
 																				 * ie
 																				 * before
 																				 * nc
@@ -262,8 +263,9 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 			String genus = occurrence.getGenus();
 			String se = occurrence.getSpecificEpithet();
 			String nc = occurrence.getNomenclaturalCode();
+			String ir = occurrence.getInfraspecificRank();
 			String ie = occurrence.getInfraspecificEpithet();
-			Classification c = taxonomicAuthority.classify(genus, se, ie, nc); /*
+			Classification c = taxonomicAuthority.classify(genus, se, ir, ie, nc); /*
 																				 * ie
 																				 * before
 																				 * nc
@@ -350,8 +352,9 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 				String genus = occurrence.getGenus();
 				String se = occurrence.getSpecificEpithet();
 				String nc = occurrence.getNomenclaturalCode();
+				String ir = occurrence.getInfraspecificRank();
 				String ie = occurrence.getInfraspecificEpithet();
-				Classification c = taxonomicAuthority.classify(genus, se, ie, nc); /*
+				Classification c = taxonomicAuthority.classify(genus, se, ir, ie, nc); /*
 																					 * ie
 																					 * before
 																					 * nc
@@ -373,8 +376,9 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 				String genus = occurrence.getGenus();
 				String se = occurrence.getSpecificEpithet();
 				String nc = occurrence.getNomenclaturalCode();
+				String ir = occurrence.getInfraspecificRank();
 				String ie = occurrence.getInfraspecificEpithet();
-				Classification c = taxonomicAuthority.classify(genus, se, ie, nc); /*
+				Classification c = taxonomicAuthority.classify(genus, se, ir, ie, nc); /*
 																					 * ie
 																					 * before
 																					 * nc
@@ -774,8 +778,9 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 						String genus = o.getGenus();
 						String se = o.getSpecificEpithet();
 						String nc = o.getNomenclaturalCode();
+						String ir = o.getInfraspecificRank();
 						String ie = o.getInfraspecificEpithet();
-						Classification c = taxonomicAuthority.classify(genus, se, ie, nc);
+						Classification c = taxonomicAuthority.classify(genus, se, ir, ie, nc);
 						String oComment = c.getNotes();
 						OccurrenceComments comment = new OccurrenceComments(o.getId(),ADMIN_ID, oComment);
 						comment.setDateCommented(date);
@@ -801,8 +806,7 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 						
 					}
 					commentsService.attachDirty(session,allComments);
-					ManagedSession.commitTransaction(session);
-					 if (!ownerOccurrencesForCase5.isEmpty()) {
+					if (!ownerOccurrencesForCase5.isEmpty()) {
 					      for (Integer userId : ownerOccurrencesForCase5.keySet()) {
 						    if(mailNotificationUserMap.containsKey(userId) && mailNotificationUserMap.get(userId) != null){
 						    	Set<Integer> occurrenceIds = mailNotificationUserMap.get(userId).getOccurrenceIds();
@@ -817,7 +821,8 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 						    }
 					      }
 					}
-					 nbtotal+=subOccurrences.size();
+					ManagedSession.commitTransaction(session);
+					nbtotal+=subOccurrences.size();
 		  	    }catch (IOException e) {
 					e.printStackTrace();
 				} 
@@ -826,11 +831,11 @@ public class RevalidationServiceImpl extends RemoteServiceServlet implements
 					result.setErrorMessage(re.getMessage());
 					result.getResultMap().put(5, nbtotal);
 					exc.setResult(result);
-		  	      	ManagedSession.rollbackTransaction(session);
+		  	      	if(session!=null)ManagedSession.rollbackTransaction(session);
 		  	      throw exc;
 		  	    } 
 				finally {					 
-				     if(session!=null) session.close();
+				     //if(session!=null) session.close();
 				 }
 		  	    
 				indice++;
