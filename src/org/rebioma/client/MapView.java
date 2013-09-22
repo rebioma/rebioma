@@ -36,6 +36,7 @@ import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.MapControlsGroup;
+import org.rebioma.client.maps.MapDrawingControl;
 import org.rebioma.client.maps.ModelEnvLayer;
 import org.rebioma.client.maps.ModelingControl;
 import org.rebioma.client.maps.OccurrenceMarkerManager;
@@ -620,6 +621,11 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
    */
   
   private final GeocoderControl geocoder;
+  
+  /**
+   * Control qui permet de dessiner des formes geometrique sur la carte
+   */
+  private final MapDrawingControl mapDrawingControl; 
 
   /**
    * The list box on the map that allows users to overlay environmental layers
@@ -765,6 +771,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     envLayerSelector = controlsGroup.getLayerSelector();
     geocoder = controlsGroup.getGeocoder();
     initMap();
+    mapDrawingControl = new MapDrawingControl(map, ControlPosition.TOP_CENTER);
     modelSearch = new ModelSearch();
     leftTab = new TabPanel();
     leftTab.add(markerList, constants.MarkerResult());
