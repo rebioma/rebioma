@@ -1,6 +1,9 @@
 package org.rebioma.client.maps;
 
+import java.util.List;
+
 import com.google.gwt.maps.client.base.LatLng;
+import com.google.gwt.maps.client.drawinglib.OverlayType;
 import com.google.gwt.maps.client.mvc.MVCArray;
 import com.google.gwt.maps.client.mvc.MVCArrayCallback;
 import com.google.gwt.maps.client.overlays.Polygon;
@@ -31,6 +34,30 @@ public abstract class KmlGenerator {
 			.append(debutLatLng.getLatitude()).append(",0.0 ");
 	        
 			kmlBuilder.append("</coordinates></LinearRing></outerBoundaryIs></Polygon>");
+		}
+		return kmlBuilder.toString();
+	}
+	
+	public static String kmlFromCoords(/*OverlayType type, */List<LatLng> coords){
+		final StringBuilder kmlBuilder = new StringBuilder();
+		if(coords != null && !coords.isEmpty()){
+//			switch (type) {
+//				case POLYGON:
+					kmlBuilder.append("<Polygon><outerBoundaryIs><LinearRing><coordinates>");
+					for(LatLng latLng: coords){
+						kmlBuilder.append(latLng.getLongitude()).append(",")
+						.append(latLng.getLatitude()).append(",0.0 ");
+					}
+					LatLng debutLatLng = coords.get(0);
+					 //on ferme le "LinearRing" en ajoutant les coordonnées de depart à la fin
+			        kmlBuilder.append(debutLatLng.getLongitude()).append(",")
+					.append(debutLatLng.getLatitude()).append(",0.0 ");
+					kmlBuilder.append("</coordinates></LinearRing></outerBoundaryIs></Polygon>");
+//					break;
+//				default:
+//					break;
+//			}
+			
 		}
 		return kmlBuilder.toString();
 	}
