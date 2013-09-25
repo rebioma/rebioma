@@ -104,6 +104,8 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.sencha.gxt.core.client.dom.Mask;
+import com.sencha.gxt.core.client.dom.XElement;
 
 /**
  * A type of view that shows a Google map displaying pageable occurrence data
@@ -1471,7 +1473,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 			 * pager.getQuery().getOccurrenceIdsFilter().add(115408);//teste
 			 * requestData(1);
 			 */
-
+			Mask.mask((XElement)map.getElement(), "Loading");
 			mapGisService.findOccurrenceIdByGeom(kml,
 					new AsyncCallback<List<Integer>>() {
 						@Override
@@ -1483,10 +1485,12 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 									.addAll(result);
 							// on recharge les vue DetailView et ListView
 							requestData(1);
+							Mask.unmask((XElement)map.getElement());
 						}
 
 						@Override
 						public void onFailure(Throwable caught) {
+							Mask.unmask((XElement)map.getElement());
 							Window.alert("Failure =>" + caught.getMessage());
 						}
 					});
