@@ -35,8 +35,10 @@ import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
+import org.rebioma.client.maps.KmlGenerator;
 import org.rebioma.client.maps.MapControlsGroup;
 import org.rebioma.client.maps.MapDrawingControl;
+import org.rebioma.client.maps.MapDrawingControlListener;
 import org.rebioma.client.maps.ModelEnvLayer;
 import org.rebioma.client.maps.ModelingControl;
 import org.rebioma.client.maps.OccurrenceMarkerManager;
@@ -76,6 +78,7 @@ import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
 import com.google.gwt.maps.client.overlays.InfoWindow;
 import com.google.gwt.maps.client.overlays.InfoWindowOptions;
 import com.google.gwt.maps.client.overlays.Marker;
+import com.google.gwt.maps.client.overlays.Polygon;
 import com.google.gwt.maps.client.services.GeocoderRequestHandler;
 import com.google.gwt.maps.client.services.GeocoderStatus;
 import com.google.gwt.user.client.Command;
@@ -102,7 +105,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class MapView extends ComponentView implements CheckedSelectionListener,
     DataRequestListener, PageClickListener, PageListener<Occurrence>,
-    TileLayerCallback, ItemSelectionListener, SelectionHandler<Integer>, OccurrencePageSizeChangeHandler, GeocoderRequestHandler {
+    TileLayerCallback, ItemSelectionListener, SelectionHandler<Integer>, OccurrencePageSizeChangeHandler, GeocoderRequestHandler, MapDrawingControlListener {
 
   /**
    * Manage history states of map View.
@@ -772,6 +775,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
     geocoder = controlsGroup.getGeocoder();
     initMap();
     mapDrawingControl = new MapDrawingControl(map, ControlPosition.TOP_CENTER);
+    mapDrawingControl.addListener(this);
     modelSearch = new ModelSearch();
     leftTab = new TabPanel();
     leftTab.add(markerList, constants.MarkerResult());
@@ -1384,5 +1388,15 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				marker.setMap((MapWidget)null);
 			}
 		}
+	}
+
+	@Override
+	public void polygonDrawingCompleteHandler(Polygon polygon) {
+        String kml = KmlGenerator.polygon2Kml(polygon);
+        GWT.log("Polygon completed paths=" + kml);
+        Window.alert(" Representation en kml du polygon\n" + kml);
+        pager.getQuery().setOccurrenceIdsFilter(new HashSet<Integer>());
+        pager.getQuery().getOccurrenceIdsFilter().add(116384);//teste
+        requestData(1);
 	}
 }
