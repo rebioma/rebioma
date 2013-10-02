@@ -1033,6 +1033,10 @@ public class OccurrenceView extends ComponentView implements
 	private OccurrenceView() {
 		this(null);
 	}
+	
+	public SearchForm getSearchForm(){
+		return searchForm;
+	}
 
 	/**
 	 * Note: This constructor sets the query's base filters.

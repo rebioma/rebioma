@@ -1484,7 +1484,11 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 							pager.getQuery().getOccurrenceIdsFilter()
 									.addAll(result);
 							// on recharge les vue DetailView et ListView
-							requestData(1);
+							//requestData(1);
+							
+							//prendre en compte les eventuelle changement de critère dans les comboboxes de la barre horizontal en haut
+							OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
+							occView.getSearchForm().search();
 							Mask.unmask((XElement)map.getElement());
 						}
 
