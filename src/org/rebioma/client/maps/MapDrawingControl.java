@@ -138,5 +138,15 @@ public class MapDrawingControl extends Composite{
 
 
 	}
+	
+	public void clearPolygon(){
+		 if(polygon != null){
+	      	  polygon.setMap(null);//effacer le polygon du map
+		      	for(MapDrawingControlListener listener: mapDrawingControlListeners){
+		        	//normalement il n'y a que le mapView
+		        	listener.polygonDeletedHandler();
+		        }
+	     }
+	}
 
 }

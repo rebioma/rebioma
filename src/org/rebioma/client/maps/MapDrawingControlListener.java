@@ -7,4 +7,9 @@ public interface MapDrawingControlListener {
 	 * quand on a fini de dessiner un polygon sur le map
 	 */
 	public void polygonDrawingCompleteHandler(final Polygon polygon);
+	
+	/**
+	 * Quand on a supprimer le polygon tracé
+	 */
+	public void polygonDeletedHandler();
 }

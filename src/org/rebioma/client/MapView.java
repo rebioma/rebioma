@@ -33,6 +33,7 @@ import org.rebioma.client.bean.AscModel;
 import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
+import org.rebioma.client.maps.ClearMapDrawingControl;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.KmlGenerator;
@@ -48,8 +49,6 @@ import org.rebioma.client.maps.TileLayerSelector;
 import org.rebioma.client.maps.TileLayerSelector.TileLayerCallback;
 import org.rebioma.client.services.MapGisService;
 import org.rebioma.client.services.MapGisServiceAsync;
-import org.rebioma.client.services.SpeciesExplorerService;
-import org.rebioma.client.services.SpeciesExplorerServiceAsync;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptException;
@@ -73,14 +72,12 @@ import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.maps.client.controls.ControlPosition;
 import com.google.gwt.maps.client.controls.MapTypeControlOptions;
-import com.google.gwt.maps.client.drawinglib.OverlayType;
 import com.google.gwt.maps.client.events.click.ClickMapEvent;
 import com.google.gwt.maps.client.events.click.ClickMapHandler;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapEvent;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapHandler;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapEvent;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
-import com.google.gwt.maps.client.mvc.MVCArrayCallback;
 import com.google.gwt.maps.client.overlays.InfoWindow;
 import com.google.gwt.maps.client.overlays.InfoWindowOptions;
 import com.google.gwt.maps.client.overlays.Marker;
@@ -660,11 +657,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	private final GeocoderControl geocoder;
 
 	/**
-	 * Control qui permet de dessiner des formes geometrique sur la carte
-	 */
-	private final MapDrawingControl mapDrawingControl;
-
-	/**
 	 * The list box on the map that allows users to overlay environmental layers
 	 * on the Google map.
 	 */
@@ -816,9 +808,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		envLayerSelector = controlsGroup.getLayerSelector();
 		geocoder = controlsGroup.getGeocoder();
 		initMap();
-		mapDrawingControl = new MapDrawingControl(map,
-				ControlPosition.TOP_CENTER);
-		mapDrawingControl.addListener(this);
 		modelSearch = new ModelSearch();
 		leftTab = new TabPanel();
 		leftTab.add(markerList, constants.MarkerResult());
@@ -1322,6 +1311,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		map = new MapWidget(mapOptions);
 		map.setWidth("100%");
 		map.setHeight("100%");
+		final MapView mapView = this;
 		// map.addControl(getModelControl());
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -1345,6 +1335,14 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				// envLayerSelector.setMap(map, ControlPosition.TOP_RIGHT);
 				hideControl.addControlWidgetToHide(geocoder);
 				hideControl.addControlWidgetToHide(envLayerSelector);
+
+				
+				
+				MapDrawingControl mapDrawingControl = new MapDrawingControl(map,
+						ControlPosition.TOP_CENTER);
+				mapDrawingControl.addListener(mapView);
+				ClearMapDrawingControl clearMapDrawingControl = new ClearMapDrawingControl(mapDrawingControl);
+				map.setControls(ControlPosition.TOP_LEFT, clearMapDrawingControl);
 			}
 		});
 		map.addClickHandler(mapClickHandler);
@@ -1499,5 +1497,12 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 						}
 					});
 		}
+	}
+
+	@Override
+	public void polygonDeletedHandler() {
+		pager.getQuery().setOccurrenceIdsFilter(new HashSet<Integer>());
+		OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
+		occView.getSearchForm().search();
 	}
 }
