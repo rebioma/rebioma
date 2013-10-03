@@ -45,13 +45,13 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
 		if(shapeFile == null){
 			ShapeFileInfo info = new ShapeFileInfo();
-			info.setLibelle("Limite region");
+			info.setLibelle("Limite region Serveur");
 			infos.add(info);
 		}else{
 			for(int i=1;i<= 22;i++){
 				ShapeFileInfo info = new ShapeFileInfo();
 				info.setGid(i);
-				info.setLibelle("region " + i);
+				info.setLibelle("region  Serveur " + i);
 				infos.add(info);
 			}
 		}

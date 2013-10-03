@@ -4,10 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.rebioma.client.bean.ShapeFileInfo;
+import org.rebioma.client.services.MapGisService;
+import org.rebioma.client.services.MapGisServiceAsync;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.sencha.gxt.core.client.ValueProvider;
+import com.sencha.gxt.data.client.loader.RpcProxy;
 import com.sencha.gxt.data.shared.ModelKeyProvider;
 import com.sencha.gxt.data.shared.TreeStore;
+import com.sencha.gxt.data.shared.loader.ChildTreeStoreBinding;
+import com.sencha.gxt.data.shared.loader.TreeLoader;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.Window;
 import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
@@ -32,22 +39,21 @@ public class ShapeFileWindow extends Window {
 
 	private void init() {
 		ContentPanel panel = new ContentPanel();
-		panel.setHeadingText("Liste des fichiers shapes");
-		panel.setPixelSize(315, 400);
+		panel.setHeaderVisible(false);
+		this.setHeadingText("Liste des fichiers shapes");
+		//panel.setPixelSize(315, 400);
 		panel.addStyleName("margin-10");
-		/*
-		VerticalLayoutContainer con = new VerticalLayoutContainer();
-		panel.add(con);
-
-		// final ExampleServiceAsync service = GWT.create(ExampleService.class);
+		panel.setHeight(300);
+		
+		final MapGisServiceAsync mapGisService = GWT.create(MapGisService.class);
 		RpcProxy<ShapeFileInfo, List<ShapeFileInfo>> proxy = new RpcProxy<ShapeFileInfo, List<ShapeFileInfo>>() {
 			@Override
 			public void load(ShapeFileInfo loadConfig,
 					AsyncCallback<List<ShapeFileInfo>> callback) {
-				// appel du service.
+				mapGisService.getShapeFileItems(loadConfig, callback);
 			}
 		};
-
+		
 		TreeLoader<ShapeFileInfo> loader = new TreeLoader<ShapeFileInfo>(proxy) {
 			@Override
 			public boolean hasChildren(ShapeFileInfo parent) {
@@ -58,47 +64,7 @@ public class ShapeFileWindow extends Window {
 		TreeStore<ShapeFileInfo> store = new TreeStore<ShapeFileInfo>(
 				new KeyProvider());
 		loader.addLoadHandler(new ChildTreeStoreBinding<ShapeFileInfo>(store));
-		final Tree<ShapeFileInfo, String> tree = new Tree<ShapeFileInfo, String>(
-			store, new ValueProvider<ShapeFileInfo, String>() {
-	
-				@Override
-				public String getValue(ShapeFileInfo object) {
-					return object.getLibelle();
-				}
-	
-				@Override
-				public void setValue(ShapeFileInfo object, String value) {
-				}
-	
-				@Override
-				public String getPath() {
-					return "libelle";
-				}
-			});
-		tree.setLoader(loader);
-		TreeStateHandler<ShapeFileInfo> stateHandler = new TreeStateHandler<ShapeFileInfo>(tree);
-	    stateHandler.loadState();
-	    //tree.getStyle().setLeafIcon(ExampleImages.INSTANCE.music());
-	    panel.add(tree);
-		this.add(panel);*/
-		
-		FlowLayoutContainer con = new FlowLayoutContainer();
-		 
-	    TreeStore<ShapeFileInfo> store = new TreeStore<ShapeFileInfo>(new KeyProvider());
-	    ShapeFileInfo root = new ShapeFileInfo();
-	    root.setLibelle("Limite region madagascar");
-	    store.add(root);
-	    List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
-	    for(int i=1;i<=22;i++){
-	    	ShapeFileInfo info = new ShapeFileInfo();
-	    	info.setLibelle("region " + i);
-	    	info.setGid(i);
-	    	infos.add(info);
-	    }
-	    store.add(root, infos);
-	    
 	    final Tree<ShapeFileInfo, String> tree = new Tree<ShapeFileInfo, String>(store, new ValueProvider<ShapeFileInfo, String>() {
-	    	 
 		    	@Override
 				public String getValue(ShapeFileInfo object) {
 					return object.getLibelle();
@@ -113,6 +79,7 @@ public class ShapeFileWindow extends Window {
 					return "libelle";
 				}
 	      });
+	     tree.setLoader(loader);
 	      tree.setWidth(300);
 	      //tree.getStyle().setLeafIcon(ExampleImages.INSTANCE.music());
 	      tree.setCheckable(true);
@@ -124,8 +91,7 @@ public class ShapeFileWindow extends Window {
 	            
 	          }
 	      });*/
-	      con.add(tree, new MarginData(10));
-	      panel.add(con);
+	      panel.add(tree, new MarginData(10));
 	      this.add(panel);
 	}
 }
