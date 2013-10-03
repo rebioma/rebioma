@@ -32,6 +32,7 @@ import org.rebioma.client.UploadView.UploadListener;
 import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.RevalidationResult;
 import org.rebioma.client.bean.User;
+import org.rebioma.client.maps.ShapeFileWindow;
 import org.rebioma.client.services.RevalidationService;
 import org.rebioma.client.services.ServerPingService;
 import org.rebioma.client.services.ServerPingServiceAsync;
@@ -49,9 +50,7 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
-import com.google.gwt.user.client.DeferredCommand;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -239,6 +238,7 @@ public class OccurrenceView extends ComponentView implements
 		final Map<String, Integer> typeIndexMap = new HashMap<String, Integer>();
 		private final Button searchButton;
 		private final HTML advanceLink = new HTML(constants.AdvanceSearch());
+		private final HTML shapeDialogLink = new HTML("Shape file");
 		private final ListBox resultFilterLb = new ListBox();
 		private final ListBox invalidatedLb = new ListBox();
 		private final Label forLabel = new Label(" " + constants.For() + " ");
@@ -254,7 +254,10 @@ public class OccurrenceView extends ComponentView implements
 			final Label searchLabel = new Label(" " + constants.Search() + " ");
 			searchLabel.setStyleName("searchLabel");
 			advanceLink.setStyleName("link");
+			shapeDialogLink.setStyleName("link");
 			advanceLink.addStyleName("AdvanceLink");
+			shapeDialogLink.setStyleName("AdvanceLink");
+			
 			resultFilterLb.addItem(constants.Both(), "both");
 			resultFilterLb.addItem(constants.Public(), "public");
 			resultFilterLb.addItem(constants.Private(), "private");
@@ -324,9 +327,11 @@ public class OccurrenceView extends ComponentView implements
 			mainHp.add(searchBox);
 			mainHp.add(searchButton);
 			mainHp.add(advanceLink);
+			mainHp.add(shapeDialogLink);
 			initWidget(mainHp);
 			mainHp.setStyleName("Search-Form");
 			advanceLink.addClickHandler(OccurrenceView.this);
+			shapeDialogLink.addClickHandler(OccurrenceView.this);
 			onStateChanged(ApplicationView.getCurrentState());
 			resultFilterLb.addChangeHandler(this);
 		}
@@ -1172,6 +1177,11 @@ public class OccurrenceView extends ComponentView implements
 			helpLink.setStyleName("helplink");
 			switchViewPanel.add(helpLink);
 			addHistoryItem(false);
+		}else if (sender == searchForm.shapeDialogLink) {
+			ShapeFileWindow window = new ShapeFileWindow();
+			window.setWidth(400);
+			window.setHeight(300);
+			window.show();
 		} else if (sender == revalidateLink){
 			addHistoryItem(false);
 		    String sessionId = Cookies.getCookie(ApplicationView.SESSION_ID_NAME);

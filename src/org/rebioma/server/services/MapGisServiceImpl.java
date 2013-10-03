@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
+import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.client.services.MapGisService;
 import org.rebioma.server.util.HibernateUtil;
 
@@ -37,6 +38,24 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 					+ kml + "]");
 		}
 		return occurrenceIds;
+	}
+
+	@Override
+	public List<ShapeFileInfo> getShapeFileItems(ShapeFileInfo shapeFile) {
+		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
+		if(shapeFile == null){
+			ShapeFileInfo info = new ShapeFileInfo();
+			info.setLibelle("Limite region");
+			infos.add(info);
+		}else{
+			for(int i=1;i<= 22;i++){
+				ShapeFileInfo info = new ShapeFileInfo();
+				info.setGid(i);
+				info.setLibelle("region " + i);
+				infos.add(info);
+			}
+		}
+		return infos;
 	}
 
 	// @Override

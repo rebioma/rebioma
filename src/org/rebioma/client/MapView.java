@@ -78,6 +78,9 @@ import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapEvent;
 import com.google.gwt.maps.client.events.maptypeid.MapTypeIdChangeMapHandler;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapEvent;
 import com.google.gwt.maps.client.events.zoom.ZoomChangeMapHandler;
+import com.google.gwt.maps.client.layers.KmlLayer;
+import com.google.gwt.maps.client.layers.KmlLayerOptions;
+import com.google.gwt.maps.client.layers.KmlLayerStatus;
 import com.google.gwt.maps.client.overlays.InfoWindow;
 import com.google.gwt.maps.client.overlays.InfoWindowOptions;
 import com.google.gwt.maps.client.overlays.Marker;
@@ -1343,6 +1346,10 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				mapDrawingControl.addListener(mapView);
 				ClearMapDrawingControl clearMapDrawingControl = new ClearMapDrawingControl(mapDrawingControl);
 				map.setControls(ControlPosition.TOP_LEFT, clearMapDrawingControl);
+				/*KmlLayerOptions kmlOption = KmlLayerOptions.newInstance();
+				kmlOption.setMap(map);*/
+				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
+				layer.setMap(map);
 			}
 		});
 		map.addClickHandler(mapClickHandler);

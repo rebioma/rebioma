@@ -2,6 +2,8 @@ package org.rebioma.client.services;
 
 import java.util.List;
 
+import org.rebioma.client.bean.ShapeFileInfo;
+
 import com.google.gwt.maps.client.base.LatLng;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -22,4 +24,7 @@ public interface MapGisService  extends RemoteService {
 //	List<Integer> findOccurrenceIdByGeom(/*OverlayType overlayType, */List<LatLng> geomCoordonnees);
 	
 	List<Integer> findOccurrenceIdByGeom(String kml);
+	
+	
+	List<ShapeFileInfo> getShapeFileItems(ShapeFileInfo shapeFile);
 }
