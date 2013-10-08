@@ -34,6 +34,7 @@ import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.ClearMapDrawingControl;
+import org.rebioma.client.maps.CoordinatesControl;
 import org.rebioma.client.maps.GeocoderControl;
 import org.rebioma.client.maps.HideControl;
 import org.rebioma.client.maps.KmlGenerator;
@@ -1338,8 +1339,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				// envLayerSelector.setMap(map, ControlPosition.TOP_RIGHT);
 				hideControl.addControlWidgetToHide(geocoder);
 				hideControl.addControlWidgetToHide(envLayerSelector);
-
-				
+				CoordinatesControl coordinatesControl = new CoordinatesControl(map);
 				
 				MapDrawingControl mapDrawingControl = new MapDrawingControl(map,
 						ControlPosition.TOP_CENTER);
@@ -1348,7 +1348,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				map.setControls(ControlPosition.TOP_LEFT, clearMapDrawingControl);
 				/*KmlLayerOptions kmlOption = KmlLayerOptions.newInstance();
 				kmlOption.setMap(map);*/
-				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
+				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06_simplify_gid_123.kml");
 				layer.setMap(map);
 			}
 		});

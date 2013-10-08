@@ -1747,4 +1747,11 @@ div#content {
 	border-right: solid 1px white;
 	border-left: solid 1px white;
 }
+.coordinate_label {
+	width: 115px;
+	height: 14px;
+	margin: 2px 2px;
+  	font-family: Trebuchet MS, Verdana,Helvetica,Arial,sans-serif;
+  	/*background-color: #D9D9D9;*/
+}
 	

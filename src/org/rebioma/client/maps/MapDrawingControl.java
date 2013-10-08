@@ -46,6 +46,7 @@ public class MapDrawingControl extends Composite{
 	    polygonOptions.setStrokeOpacity(1);//opacité du contour
 	    polygonOptions.setFillColor("#ffff00");//couleur de l'interieur du polygone
 	    polygonOptions.setFillOpacity(0.5);//opacité de l'interieur du polygone
+	    polygonOptions.setClickable(false);
 //	    CircleOptions circleOptions = CircleOptions.newInstance();
 	    //circleOptions.setFillColor("FF6633");
 
@@ -54,7 +55,6 @@ public class MapDrawingControl extends Composite{
 	    options.setPolygonOptions(polygonOptions);
 	    /*options.setDrawingMode(OverlayType.CIRCLE);
 	    options.setCircleOptions(circleOptions);*/
-
 	    options.setDrawingControlOptions(drawingControlOptions);
 
 	    DrawingManager o = DrawingManager.newInstance(options);
