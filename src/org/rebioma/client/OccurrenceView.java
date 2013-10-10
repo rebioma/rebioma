@@ -31,8 +31,10 @@ import org.rebioma.client.OccurrenceQuery.ResultFilter;
 import org.rebioma.client.UploadView.UploadListener;
 import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.RevalidationResult;
+import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.client.bean.User;
 import org.rebioma.client.maps.ShapeFileWindow;
+import org.rebioma.client.maps.ShapeSelectionHandler;
 import org.rebioma.client.services.RevalidationService;
 import org.rebioma.client.services.ServerPingService;
 import org.rebioma.client.services.ServerPingServiceAsync;
@@ -74,7 +76,7 @@ import com.google.gwt.user.client.ui.Widget;
  * can be displayed as a map view, a list view, or a detail view.
  */
 public class OccurrenceView extends ComponentView implements
-		PageListener<Occurrence>, ClickHandler, OccurrenceSearchListener {
+		PageListener<Occurrence>, ClickHandler, OccurrenceSearchListener, ShapeSelectionHandler {
 
 	/**
 	 * Temporally solution for earth map type bug switching view bug. This
@@ -1182,6 +1184,7 @@ public class OccurrenceView extends ComponentView implements
 			window.setWidth(400);
 			window.setHeight(300);
 			window.show();
+			window.addTreeSelectHandler(this);
 		} else if (sender == revalidateLink){
 			addHistoryItem(false);
 		    String sessionId = Cookies.getCookie(ApplicationView.SESSION_ID_NAME);
@@ -2247,5 +2250,13 @@ public class OccurrenceView extends ComponentView implements
 		resetToDefaultState();
 		addHistoryItem(false);
 		query.requestData(1);
+	}
+
+	@Override
+	public void onShapeSelect(List<ShapeFileInfo> selectedItems) {
+		switchView(MAP, false);
+		ViewInfo mapViewInfo = viewInfos.get(MAP.toLowerCase());
+		MapView mapView = (MapView)mapViewInfo.getView();
+		mapView.loadKmlLayer(selectedItems);
 	}
 }

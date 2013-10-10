@@ -32,6 +32,7 @@ import org.rebioma.client.PagerWidget.PageClickListener;
 import org.rebioma.client.bean.AscModel;
 import org.rebioma.client.bean.Occurrence;
 import org.rebioma.client.bean.OccurrenceSummary;
+import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.client.maps.AscTileLayer.LayerInfo;
 import org.rebioma.client.maps.ClearMapDrawingControl;
 import org.rebioma.client.maps.CoordinatesControl;
@@ -1346,10 +1347,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				mapDrawingControl.addListener(mapView);
 				ClearMapDrawingControl clearMapDrawingControl = new ClearMapDrawingControl(mapDrawingControl);
 				map.setControls(ControlPosition.TOP_LEFT, clearMapDrawingControl);
-				/*KmlLayerOptions kmlOption = KmlLayerOptions.newInstance();
-				kmlOption.setMap(map);*/
-				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06_simplify_gid_123.kml");
-				layer.setMap(map);
 			}
 		});
 		map.addClickHandler(mapClickHandler);
@@ -1511,5 +1508,17 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		pager.getQuery().setOccurrenceIdsFilter(new HashSet<Integer>());
 		OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
 		occView.getSearchForm().search();
+	}
+	
+	public void loadKmlLayer(List<ShapeFileInfo> shapeFileInfos){
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				/*KmlLayerOptions kmlOption = KmlLayerOptions.newInstance();
+				kmlOption.setMap(map);*/
+				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
+				layer.setMap(map);
+			}
+		});
 	}
 }

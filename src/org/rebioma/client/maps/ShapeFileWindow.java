@@ -17,12 +17,17 @@ import com.sencha.gxt.data.shared.loader.ChildTreeStoreBinding;
 import com.sencha.gxt.data.shared.loader.TreeLoader;
 import com.sencha.gxt.widget.core.client.ContentPanel;
 import com.sencha.gxt.widget.core.client.Window;
-import com.sencha.gxt.widget.core.client.container.FlowLayoutContainer;
-import com.sencha.gxt.widget.core.client.container.MarginData;
+import com.sencha.gxt.widget.core.client.button.TextButton;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer;
+import com.sencha.gxt.widget.core.client.container.BoxLayoutContainer.BoxLayoutPack;
+import com.sencha.gxt.widget.core.client.container.VerticalLayoutContainer.VerticalLayoutData;
+import com.sencha.gxt.widget.core.client.event.SelectEvent;
+import com.sencha.gxt.widget.core.client.event.SelectEvent.SelectHandler;
+import com.sencha.gxt.widget.core.client.toolbar.ToolBar;
 import com.sencha.gxt.widget.core.client.tree.Tree;
 import com.sencha.gxt.widget.core.client.tree.Tree.CheckCascade;
 
-public class ShapeFileWindow extends Window {
+public class ShapeFileWindow extends Window implements SelectHandler {
 
 	class KeyProvider implements ModelKeyProvider<ShapeFileInfo> {
 		@Override
@@ -30,6 +35,14 @@ public class ShapeFileWindow extends Window {
 			String key = item.getGid() + item.getLibelle();
 			return key;
 		}
+	}
+	
+	private Tree<ShapeFileInfo, String> tree;
+	
+	private List<ShapeSelectionHandler> handlers = new ArrayList<ShapeSelectionHandler>();
+	
+	public void addTreeSelectHandler(ShapeSelectionHandler handler){
+		this.handlers.add(handler);
 	}
 
 	public ShapeFileWindow() {
@@ -40,6 +53,11 @@ public class ShapeFileWindow extends Window {
 	private void init() {
 		ContentPanel panel = new ContentPanel();
 		panel.setHeaderVisible(false);
+		VerticalLayoutContainer p = new VerticalLayoutContainer();
+	    p.setBorders(true);
+	    p.getElement().getStyle().setBackgroundColor("white");
+	    panel.add(p);
+	    
 		this.setHeadingText("Liste des fichiers shapes");
 		//panel.setPixelSize(315, 400);
 		panel.addStyleName("margin-10");
@@ -64,7 +82,7 @@ public class ShapeFileWindow extends Window {
 		TreeStore<ShapeFileInfo> store = new TreeStore<ShapeFileInfo>(
 				new KeyProvider());
 		loader.addLoadHandler(new ChildTreeStoreBinding<ShapeFileInfo>(store));
-	    final Tree<ShapeFileInfo, String> tree = new Tree<ShapeFileInfo, String>(store, new ValueProvider<ShapeFileInfo, String>() {
+	    tree = new Tree<ShapeFileInfo, String>(store, new ValueProvider<ShapeFileInfo, String>() {
 		    	@Override
 				public String getValue(ShapeFileInfo object) {
 					return object.getLibelle();
@@ -91,7 +109,20 @@ public class ShapeFileWindow extends Window {
 	            
 	          }
 	      });*/
-	      panel.add(tree, new MarginData(10));
+	      TextButton textBtn = new TextButton("Show Layer");
+	      textBtn.addSelectHandler(this);
+	      this.addButton(textBtn);
+	      p.add(tree);
 	      this.add(panel);
+	      this.setButtonAlign(BoxLayoutPack.END);
+	}
+
+	@Override
+	public void onSelect(SelectEvent event) {
+		List<ShapeFileInfo> checkedSelection = tree.getCheckedSelection();
+		for(ShapeSelectionHandler handler: handlers){
+			handler.onShapeSelect(checkedSelection);
+		}
+		
 	}
 }
