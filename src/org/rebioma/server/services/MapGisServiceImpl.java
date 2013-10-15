@@ -2,7 +2,10 @@ package org.rebioma.server.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -51,6 +54,7 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			//recuperer la liste des fichier shapes
 			ShapeFileInfo info = new ShapeFileInfo();
 			info.setLibelle("Limite region Serveur");
+			info.setTableName("lim_region_aout06");
 			infos.add(info);
 		}else{
 			//recuperer les lignes d'un fichier shape
@@ -58,6 +62,7 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 				ShapeFileInfo info = new ShapeFileInfo();
 				info.setGid(i);
 				info.setLibelle("region  Serveur " + i);
+				info.setTableName("lim_region_aout06");
 				infos.add(info);
 			}
 		}
@@ -88,6 +93,51 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		List<KmlDbRow> kmlDbRows = sqlQuery.list();
 		String kml = KmlUtil.getKMLString(kmlDbRows);
 		KmlUtil.writeKmlFile(kml, "D:/NainaZo/workspace/Rebioma/war/temp", "limite_region_"+ fileNameSuffix.toString());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<Integer> findOccurrenceIdsByShapeFiles(
+			Map<String, List<Integer>> tableGidsMap) {
+		StringBuilder sqlBuilder = new StringBuilder("SELECT o.id FROM occurrence o ");
+		StringBuilder sqlWhereBuilder = new StringBuilder();
+		int index = 0;
+		Map<String, List<Integer>> gidsParamMap = new HashMap<String, List<Integer>>();
+		for(Entry<String, List<Integer>> entry: tableGidsMap.entrySet()){
+			//String paramName = "gids" + index;
+			String tableName = entry.getKey();
+			List<Integer> gids = entry.getValue();
+			sqlBuilder.append(" JOIN ").append(tableName).append(" ON ");
+			//sqlBuilder.append(tableName).append(".gid IN (:").append(paramName).append(") ");
+			sqlBuilder.append("( ");
+			int gidIdx = 0;
+			for(Integer gid: gids){
+				if(gidIdx > 0){
+					sqlBuilder.append(" OR ");
+				}
+				sqlBuilder.append(tableName).append(".gid=").append(gid);
+				gidIdx++;
+			}
+			sqlBuilder.append(") ") ;
+			if(sqlWhereBuilder.length() == 0){
+				sqlWhereBuilder.append(" WHERE ");
+			}else{
+				sqlWhereBuilder.append(" OR ");
+			}
+			sqlWhereBuilder.append(" ST_Within(").append("o.geom,").append(tableName).append(".geom").append(")='t' ");
+			//gidsParamMap.put(paramName, gids);
+			index++;
+		}
+		sqlBuilder.append(sqlWhereBuilder.toString());
+		List<Integer> occurrenceIds = new ArrayList<Integer>();
+		Session sess = HibernateUtil.getSessionFactory().openSession();
+		SQLQuery sqlQuery = sess
+				.createSQLQuery(sqlBuilder.toString());
+//		for(Entry<String, List<Integer>> paramEntry: gidsParamMap.entrySet()){
+//			sqlQuery.setParameter(paramEntry.getKey(), paramEntry.getValue());
+//		}
+		occurrenceIds = sqlQuery.list();
+		return occurrenceIds;
 	}
 
 	// @Override

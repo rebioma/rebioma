@@ -1,6 +1,7 @@
 package org.rebioma.client.services;
 
 import java.util.List;
+import java.util.Map;
 
 import org.rebioma.client.bean.ShapeFileInfo;
 
@@ -13,6 +14,9 @@ public interface MapGisServiceAsync {
 
 	void getShapeFileItems(ShapeFileInfo shapeFile,
 			AsyncCallback<List<ShapeFileInfo>> callback);
+
+	void findOccurrenceIdsByShapeFiles(Map<String, List<Integer>> tableGidsMap,
+			AsyncCallback<List<Integer>> callback);
 
 
 }

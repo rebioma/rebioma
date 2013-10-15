@@ -1452,6 +1452,20 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 			}
 		}
 	}
+	
+	private void reloadPageWithOccurrenceIds(List<Integer> occurrenceIds){
+		// on prepare le query
+		pager.getQuery().setOccurrenceIdsFilter(
+				new HashSet<Integer>());
+		pager.getQuery().getOccurrenceIdsFilter()
+				.addAll(occurrenceIds);
+		// on recharge les vue DetailView et ListView
+		//requestData(1);
+		
+		//prendre en compte les eventuelle changement de critère dans les comboboxes de la barre horizontal en haut
+		OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
+		occView.getSearchForm().search();
+	}
 
 	/**
 	 * appeler quand l'user a fini de dessiner un polygone sur le map (à l'aide
@@ -1480,17 +1494,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 					new AsyncCallback<List<Integer>>() {
 						@Override
 						public void onSuccess(List<Integer> result) {
-							// on prepare le query
-							pager.getQuery().setOccurrenceIdsFilter(
-									new HashSet<Integer>());
-							pager.getQuery().getOccurrenceIdsFilter()
-									.addAll(result);
-							// on recharge les vue DetailView et ListView
-							//requestData(1);
-							
-							//prendre en compte les eventuelle changement de critère dans les comboboxes de la barre horizontal en haut
-							OccurrenceView occView = ApplicationView.getApplication().getOccurrenceView();
-							occView.getSearchForm().search();
+							reloadPageWithOccurrenceIds(result);
 							Mask.unmask((XElement)map.getElement());
 						}
 
@@ -1510,7 +1514,19 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		occView.getSearchForm().search();
 	}
 	
+	private Map<String, List<Integer>> getTableGidsMap(List<ShapeFileInfo> shapeFileInfos){
+		Map<String, List<Integer>> tableGidsMap = new HashMap<String, List<Integer>>();
+		for(ShapeFileInfo info: shapeFileInfos){
+			if(!tableGidsMap.containsKey(info.getTableName())){
+				tableGidsMap.put(info.getTableName(), new ArrayList<Integer>());
+			}
+			tableGidsMap.get(info.getTableName()).add(info.getGid());
+		}
+		return tableGidsMap;
+	}
+	
 	public void loadKmlLayer(List<ShapeFileInfo> shapeFileInfos){
+		//Chargement du layer kml
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
@@ -1518,6 +1534,28 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				kmlOption.setMap(map);*/
 				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
 				layer.setMap(map);
+			}
+		});
+		//chargement des occurrences
+//		Map<String, List<Integer>> tableGidsMap = new HashMap<String, List<Integer>>();
+//		List<Integer> gids = new ArrayList<Integer>();
+//		gids.add(1);//alaotra mangoro
+//		gids.add(4);//analanjirofo
+//		tableGidsMap.put("lim_region_aout06_4326", gids);
+		Map<String, List<Integer>> tableGidsMap = this.getTableGidsMap(shapeFileInfos);
+		Mask.mask((XElement)map.getElement(), "Loading");
+		mapGisService.findOccurrenceIdsByShapeFiles(tableGidsMap, new AsyncCallback<List<Integer>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Mask.unmask((XElement)map.getElement());
+				Window.alert("Failure =>" + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(List<Integer> result) {
+				reloadPageWithOccurrenceIds(result);
+				Mask.unmask((XElement)map.getElement());
 			}
 		});
 	}

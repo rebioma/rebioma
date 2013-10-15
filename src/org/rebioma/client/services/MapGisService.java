@@ -1,6 +1,7 @@
 package org.rebioma.client.services;
 
 import java.util.List;
+import java.util.Map;
 
 import org.rebioma.client.bean.ShapeFileInfo;
 
@@ -27,4 +28,11 @@ public interface MapGisService  extends RemoteService {
 	
 	
 	List<ShapeFileInfo> getShapeFileItems(ShapeFileInfo shapeFile);
+	
+	/**
+	 * 
+	 * @param tableGidsMap - couple du nom de la table et les gid de la table
+	 * @return liste d'identifiant d'occurrence
+	 */
+	List<Integer> findOccurrenceIdsByShapeFiles(Map<String, List<Integer>> tableGidsMap);
 }
