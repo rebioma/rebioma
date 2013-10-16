@@ -70,6 +70,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.widget.core.client.toolbar.SeparatorToolItem;
 
 /**
  * A view that supports searching occurrences and paging through results which
@@ -240,7 +241,7 @@ public class OccurrenceView extends ComponentView implements
 		final Map<String, Integer> typeIndexMap = new HashMap<String, Integer>();
 		private final Button searchButton;
 		private final HTML advanceLink = new HTML(constants.AdvanceSearch());
-		private final HTML shapeDialogLink = new HTML("Shape file");
+		private final HTML shapeDialogLink = new HTML(" | Shape file");
 		private final ListBox resultFilterLb = new ListBox();
 		private final ListBox invalidatedLb = new ListBox();
 		private final Label forLabel = new Label(" " + constants.For() + " ");
@@ -258,7 +259,6 @@ public class OccurrenceView extends ComponentView implements
 			advanceLink.setStyleName("link");
 			shapeDialogLink.setStyleName("link");
 			advanceLink.addStyleName("AdvanceLink");
-			shapeDialogLink.setStyleName("AdvanceLink");
 			
 			resultFilterLb.addItem(constants.Both(), "both");
 			resultFilterLb.addItem(constants.Public(), "public");
@@ -329,6 +329,7 @@ public class OccurrenceView extends ComponentView implements
 			mainHp.add(searchBox);
 			mainHp.add(searchButton);
 			mainHp.add(advanceLink);
+			//mainHp.add(new SeparatorToolItem());
 			mainHp.add(shapeDialogLink);
 			initWidget(mainHp);
 			mainHp.setStyleName("Search-Form");
