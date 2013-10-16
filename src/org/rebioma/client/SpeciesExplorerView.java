@@ -66,7 +66,10 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 	private final SpeciesExplorerPanel speciesExplorerPanel;
 	//final SpeciesInfoPanel infoPanel;
 	
-	
+	//boutons de recherche 
+	/*private final Button findButton;
+	private final Button filterButton ;
+	private final Button resetButton;*/
 	/**
 	 * The main widget wrapped by this composite.
 	 */
@@ -157,6 +160,7 @@ public class SpeciesExplorerView extends ComponentView implements ClickHandler, 
 		verticalPanel.setCellHeight(toolHp, "25px");
 		speciesExplorerPanel = new SpeciesExplorerPanel(); 
 		speciesExplorerPanel.getTreeGrid().setWidth(Window.getClientWidth()-20 +"px");
+		verticalPanel.add(speciesExplorerPanel.getToolBarHaut());
 	    verticalPanel.add(speciesExplorerPanel.getTreeGrid());
 	    speciesExplorerPanel.addCheckBoxGridListener(this);
 		initWidget(verticalPanel);
