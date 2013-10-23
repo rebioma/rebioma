@@ -70,8 +70,8 @@ public class KmlFileServlet extends HttpServlet {
 			//
 			java.util.Collections.sort(gids);
 			String kmlFileName = getKmlFileName(tableName, gids, gisTableSimplificationTolerance);
-			resp.setContentType("application/zip");
-	        resp.setHeader("Content-Disposition", "attachment; filename=" + tableName +".zip");
+			resp.setContentType("application/vnd.google-earth.kmz"); //'application/vnd.google-earth.kml+xml' pour un fichier kml
+	        resp.setHeader("Content-Disposition", "attachment; filename=" + tableName +".kmz");
 			File kmlFile = new File(getTempPath(), kmlFileName);
 			DBFactory.getFileValidationService().zipFiles(new File[] {kmlFile}, resp.getOutputStream());
 		}
