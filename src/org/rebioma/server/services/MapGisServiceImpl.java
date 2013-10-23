@@ -11,11 +11,11 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
 import org.hibernate.type.Type;
+import org.rebioma.client.KmlUtil;
 import org.rebioma.client.bean.KmlDbRow;
 import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.client.services.MapGisService;
 import org.rebioma.server.util.HibernateUtil;
-import org.rebioma.server.util.KmlUtil;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 

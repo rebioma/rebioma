@@ -95,9 +95,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FormPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.HorizontalSplitPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -586,6 +588,8 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	 * Google map.
 	 */
 	private static final int DEFAULT_ZOOM = 5;
+	
+	private Set<KmlLayer> kmlLayers = new HashSet<KmlLayer>();
 
 	/**
 	 * Display field for map info window.
@@ -1520,22 +1524,15 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 			if(!tableGidsMap.containsKey(info.getTableName())){
 				tableGidsMap.put(info.getTableName(), new ArrayList<Integer>());
 			}
-			tableGidsMap.get(info.getTableName()).add(info.getGid());
+			if(info.getGid() > 0){
+				tableGidsMap.get(info.getTableName()).add(info.getGid());
+			}
+			
 		}
 		return tableGidsMap;
 	}
 	
 	public void loadKmlLayer(List<ShapeFileInfo> shapeFileInfos){
-		//Chargement du layer kml
-		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-			@Override
-			public void execute() {
-				/*KmlLayerOptions kmlOption = KmlLayerOptions.newInstance();
-				kmlOption.setMap(map);*/
-				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
-				layer.setMap(map);
-			}
-		});
 		//chargement des occurrences
 //		Map<String, List<Integer>> tableGidsMap = new HashMap<String, List<Integer>>();
 //		List<Integer> gids = new ArrayList<Integer>();
@@ -1545,7 +1542,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 		Map<String, List<Integer>> tableGidsMap = this.getTableGidsMap(shapeFileInfos);
 		Mask.mask((XElement)map.getElement(), "Loading");
 		mapGisService.findOccurrenceIdsByShapeFiles(tableGidsMap, new AsyncCallback<List<Integer>>() {
-
 			@Override
 			public void onFailure(Throwable caught) {
 				Mask.unmask((XElement)map.getElement());
@@ -1558,5 +1554,30 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				Mask.unmask((XElement)map.getElement());
 			}
 		});
+		/* ------------------------ chargement des layers ------------------------------- */
+
+//		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+//			@Override
+//			public void execute() {
+//				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
+//				layer.setMap(map);
+//			}
+//		});
+		Set<String> urls = KmlUtil.getKmlFileUrl(tableGidsMap);
+		//suppression des layers existants
+		for(KmlLayer layer: kmlLayers){
+			layer.setMap(null);
+		}
+		//Chargement des layers kml
+		for(final String url: urls){
+			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+				@Override
+				public void execute() {
+					KmlLayer layer = KmlLayer.newInstance(url);
+					layer.setMap(map);
+					kmlLayers.add(layer);
+				}
+			});
+		}
 	}
 }

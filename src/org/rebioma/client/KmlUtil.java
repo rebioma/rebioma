@@ -1,12 +1,18 @@
-package org.rebioma.server.util;
+package org.rebioma.client;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.rebioma.client.bean.KmlDbRow;
+
+import com.google.gwt.core.client.GWT;
 /**
  * 
  * @author Mika
@@ -14,9 +20,9 @@ import org.rebioma.client.bean.KmlDbRow;
  */
 public class KmlUtil {
 	
-	private static final String KML_GID_NAME = "gid";
+	public static final String KML_GID_NAME = "gid";
 	
-	private static final String KML_LABEL_NAME = "name";
+	public static final String KML_LABEL_NAME = "name";
 	
 	private static final String KML_FOLDER_HEADER = "<Folder><name>sql_statement</name>";
 	
@@ -34,7 +40,45 @@ public class KmlUtil {
 													+"<SimpleField name=\""+ KML_LABEL_NAME +"\" type=\"string\"></SimpleField>"
 												  +"</Schema>";
 	
+	public static final String GIDS_ITEM_SEPARATOR = "|";
+	public static final String TABLE_PARAM_NAME = "table";
+	public static final String GIDS_PARAM_NAME = "gids";
 	
+	/**
+	 * Recupérer les urls pour télécharger les fichiers kml (1 fichier kml par table)
+	 * @param tableGidsMap
+	 * @return
+	 */
+	public static Set<String> getKmlFileUrl(Map<String, List<Integer>> tableGidsMap){
+		StringBuilder gidsParTables = new StringBuilder();
+		Set<String> urls = new HashSet<String>();
+		if(tableGidsMap.size() > 0){
+			for(Entry<String, List<Integer>> entry: tableGidsMap.entrySet()){
+				StringBuilder url = new StringBuilder(GWT.getModuleBaseURL() + "kmlfile");
+				String tableParamName = TABLE_PARAM_NAME;
+				String tableParamValue = entry.getKey();
+				if(url.indexOf("?") == -1){
+					url.append("?");
+				}else{
+					url.append("&");
+				}
+				url.append(tableParamName).append("=").append(tableParamValue);//un url par table
+				//gids
+				int gidIndex = 0;
+				gidsParTables.setLength(0);
+				for(Integer gid: entry.getValue()){
+					if(gidIndex > 0){
+						gidsParTables.append(GIDS_ITEM_SEPARATOR);
+					}
+					gidsParTables.append(gid);
+					gidIndex++;
+				}
+				url.append("&").append(GIDS_PARAM_NAME).append("=").append(gidsParTables.toString());
+				urls.add(url.toString());
+			}
+		}
+		return urls;
+	}
 	/**
 	 * 
 	 * @param kmls

@@ -17,12 +17,11 @@ import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
-import org.rebioma.client.KmlDownloadUtility;
+import org.rebioma.client.KmlUtil;
 import org.rebioma.client.bean.KmlDbRow;
 import org.rebioma.server.services.DBFactory;
-import org.rebioma.server.services.OccurrenceDbImpl;
 import org.rebioma.server.util.HibernateUtil;
-import org.rebioma.server.util.KmlUtil;
+
 
 public class KmlFileServlet extends HttpServlet {
 
@@ -42,72 +41,71 @@ public class KmlFileServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		String nbTableParm = req.getParameter("nbTable");
-		int nbTable = Integer.parseInt(nbTableParm);
+		final double gisTableSimplificationTolerance = 0.01d;//à dynamiser
 		//on recupère les autres paramètres
 		Map<String, List<Integer>> tableGidsMap = new HashMap<String, List<Integer>>();
-		final String gidsSplitRegex = "\\" + KmlDownloadUtility.GIDS_ITEM_SEPARATOR;
-		for(int i=0;i< nbTable;i++){
-			String tableParamName = KmlDownloadUtility.TABLE_PARAM_PREFIX+i;
-			String tableGidsParamName = KmlDownloadUtility.TABLE_GID_PARAM_PREFIX+i;
-			String tableName = req.getParameter(tableParamName);
-			String tableGidsParam = req.getParameter(tableGidsParamName);
-			if(StringUtils.isNotBlank(tableName)){
-				//on va decouper les gids et les transformer en integer
-				List<Integer> gids = new ArrayList<Integer>();
-				if(StringUtils.isNotBlank(tableGidsParam)){
-					String[] gidsStrs = tableGidsParam.split(gidsSplitRegex);
-					for(String gidsStr: gidsStrs){
-						try{
-							gids.add(Integer.parseInt(gidsStr));
-						}catch(NumberFormatException nfe){
-							//log ?
-						}
+		final String gidsSplitRegex = "\\" + KmlUtil.GIDS_ITEM_SEPARATOR;
+		String tableParamName = KmlUtil.TABLE_PARAM_NAME;
+		String tableGidsParamName = KmlUtil.GIDS_PARAM_NAME;
+		String tableName = req.getParameter(tableParamName);
+		String tableGidsParam = req.getParameter(tableGidsParamName);
+		if(StringUtils.isNotBlank(tableName)){
+			//on va decouper les gids et les transformer en integer
+			List<Integer> gids = new ArrayList<Integer>();
+			if(StringUtils.isNotBlank(tableGidsParam)){
+				String[] gidsStrs = tableGidsParam.split(gidsSplitRegex);
+				for(String gidsStr: gidsStrs){
+					try{
+						gids.add(Integer.parseInt(gidsStr));
+					}catch(NumberFormatException nfe){
+						//log ?
 					}
 				}
-				if(tableGidsMap.containsKey(tableName)){
-					tableGidsMap.get(tableName).addAll(gids);
-				}else{
-					tableGidsMap.put(tableName, gids);
-				}
 			}
+			if(tableGidsMap.containsKey(tableName)){
+				tableGidsMap.get(tableName).addAll(gids);
+			}else{
+				tableGidsMap.put(tableName, gids);
+			}
+			//
+			java.util.Collections.sort(gids);
+			String kmlFileName = getKmlFileName(tableName, gids, gisTableSimplificationTolerance);
+			resp.setContentType("application/zip");
+	        resp.setHeader("Content-Disposition", "attachment; filename=" + tableName +".zip");
+			File kmlFile = new File(getTempPath(), kmlFileName);
+			DBFactory.getFileValidationService().zipFiles(new File[] {kmlFile}, resp.getOutputStream());
 		}
-
-		String kmlFileName = createKmlFile(tableGidsMap);
-		resp.setContentType("application/zip");
-       resp.setHeader("Content-Disposition",
-          "attachment; filename=" + kmlFileName +".zip");
-		File kmlFile = new File(getTempPath(), kmlFileName);
-		DBFactory.getFileValidationService().zipFiles(
-		          new File[] { kmlFile},
-		          resp.getOutputStream());
 		//kmlFile.delete();
 	}
 	
-	private String createKmlFile(Map<String, List<Integer>> tableGidsMap) throws IOException{
-		double gisSimplificationTolerance = 0.01d;//à dynamiser
-		List<Integer> gids = new ArrayList<Integer>();
-		gids.add(8);
-		gids.add(2);
-		gids.add(9);
-		gids.add(20);
+	private String getKmlFileName(String tableName, List<Integer> gids, double gisSimplificationTolerance) throws IOException{
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(",").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
+		sql.append(" FROM ").append(tableName).append(" WHERE ");
 		StringBuilder fileNameSuffix = new StringBuilder();
-		for(Integer gid: gids){
-			fileNameSuffix.append(gid);
+		int idx = 0;
+		for(Integer gid: gids){//on prefère utilise des OR plutot que un IN
+			if(idx > 0){
+				sql.append(" OR ");
+			}
+			sql.append("gid=").append(gid);
+			fileNameSuffix.append("-").append(gid);
+			idx++;
 		}
-		Session sess = HibernateUtil.getSessionFactory().openSession();
-		//SQLQuery sqlQuery = sess.createSQLQuery("SELECT gid, nom_region, ST_AsKML(ST_Simplify(geom,0.01)) FROM lim_region_aout06_4326");
-		SQLQuery sqlQuery = sess.createSQLQuery("SELECT gid, nom_region as name, ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult FROM lim_region_aout06_4326 WHERE gid IN (:gids)");
-		sqlQuery.setParameterList("gids", gids);
-		sqlQuery.setDouble("tolerance", gisSimplificationTolerance);
-		sqlQuery.addScalar("gid");
-		sqlQuery.addScalar("name");
-		sqlQuery.addScalar("gisAsKmlResult");
-		sqlQuery.setResultTransformer(Transformers.aliasToBean(KmlDbRow.class));
-		List<KmlDbRow> kmlDbRows = sqlQuery.list();
-		String kml = KmlUtil.getKMLString(kmlDbRows);
-		String fileName = "limite_region_"+ fileNameSuffix.toString();
-		KmlUtil.writeKmlFile(kml, getTempPath(), fileName);
+		String fileName = tableName + fileNameSuffix.toString();
+		File file = new File(getTempPath() + "/" + fileName + ".kml");
+		if(!file.exists()){
+			Session sess = HibernateUtil.getSessionFactory().openSession();
+			SQLQuery sqlQuery = sess.createSQLQuery(sql.toString());
+			sqlQuery.setDouble("tolerance", gisSimplificationTolerance);
+			sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
+			sqlQuery.addScalar(KmlUtil.KML_LABEL_NAME);
+			sqlQuery.addScalar("gisAsKmlResult");
+			sqlQuery.setResultTransformer(Transformers.aliasToBean(KmlDbRow.class));
+			List<KmlDbRow> kmlDbRows = sqlQuery.list();
+			String kml = KmlUtil.getKMLString(kmlDbRows);
+			KmlUtil.writeKmlFile(kml, getTempPath(), fileName);
+		}
 		return fileName + ".kml";
 	}
 	
