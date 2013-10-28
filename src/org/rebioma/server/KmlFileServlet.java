@@ -70,8 +70,10 @@ public class KmlFileServlet extends HttpServlet {
 			//
 			java.util.Collections.sort(gids);
 			String kmlFileName = getKmlFileName(tableName, gids, gisTableSimplificationTolerance);
-			resp.setContentType("application/vnd.google-earth.kmz"); //'application/vnd.google-earth.kml+xml' pour un fichier kml
-	        resp.setHeader("Content-Disposition", "attachment; filename=" + tableName +".kmz");
+			//resp.setContentType("application/vnd.google-earth.kmz"); //'application/vnd.google-earth.kml+xml' pour un fichier kml
+			resp.setContentType("application/vnd.google-earth.kmz");
+			String kmzFileName = kmlFileName.replaceAll(".kml", "");
+	        resp.setHeader("Content-Disposition", "attachment; filename=" + kmzFileName +".kmz");
 			File kmlFile = new File(getTempPath(), kmlFileName);
 			DBFactory.getFileValidationService().zipFiles(new File[] {kmlFile}, resp.getOutputStream());
 		}
@@ -83,13 +85,14 @@ public class KmlFileServlet extends HttpServlet {
 		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(",").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
 		sql.append(" FROM ").append(tableName).append(" WHERE ");
 		StringBuilder fileNameSuffix = new StringBuilder();
+		fileNameSuffix.append(gids.size());
 		int idx = 0;
 		for(Integer gid: gids){//on prefère utilise des OR plutot que un IN
 			if(idx > 0){
 				sql.append(" OR ");
 			}
 			sql.append("gid=").append(gid);
-			fileNameSuffix.append("-").append(gid);
+			fileNameSuffix.append(gid);
 			idx++;
 		}
 		String fileName = tableName + fileNameSuffix.toString();

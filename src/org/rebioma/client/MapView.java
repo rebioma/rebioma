@@ -1555,29 +1555,34 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 			}
 		});
 		/* ------------------------ chargement des layers ------------------------------- */
-
+		//en mode local on doit copier le fichier kml généré par notre servlet dans http://41.74.23.114/kmlfiles/ pour voir le layer sur le map
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 //			@Override
 //			public void execute() {
-//				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout06.kml");
+//				KmlLayer layer = KmlLayer.newInstance("http://41.74.23.114/kmlfiles/lim_region_aout0681891013141617.kmz");
 //				layer.setMap(map);
 //			}
 //		});
-		Set<String> urls = KmlUtil.getKmlFileUrl(tableGidsMap);
+		
+		//en mode production on peut utiliser directement le servlet puisque l'url est public
+		final Set<String> urls = KmlUtil.getKmlFileUrl(tableGidsMap);
 		//suppression des layers existants
 		for(KmlLayer layer: kmlLayers){
-			layer.setMap(null);
+			if(layer != null){
+				layer.setMap(null);
+			}
 		}
 		//Chargement des layers kml
-		for(final String url: urls){
-			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-				@Override
-				public void execute() {
+
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				for(String url: urls){
 					KmlLayer layer = KmlLayer.newInstance(url);
 					layer.setMap(map);
 					kmlLayers.add(layer);
 				}
-			});
-		}
+			}
+		});
 	}
 }
