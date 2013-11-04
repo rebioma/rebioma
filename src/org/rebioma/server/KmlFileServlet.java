@@ -1,6 +1,8 @@
 package org.rebioma.server;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,9 +109,16 @@ public class KmlFileServlet extends HttpServlet {
 			sqlQuery.setResultTransformer(Transformers.aliasToBean(KmlDbRow.class));
 			List<KmlDbRow> kmlDbRows = sqlQuery.list();
 			String kml = KmlUtil.getKMLString(kmlDbRows);
-			KmlUtil.writeKmlFile(kml, getTempPath(), fileName);
+			writeKmlFile(kml, getTempPath(), fileName);
 		}
 		return fileName + ".kml";
+	}
+	
+	private void writeKmlFile(String kml, String filePath, String fileName) throws IOException{
+		File file = new File(filePath + "/" + fileName + ".kml");
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		writer.write(kml);
+		writer.close();
 	}
 	
 	private String getTempPath(){

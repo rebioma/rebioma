@@ -68,32 +68,6 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		}
 		return infos;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public static void main(String[] args) throws IOException{
-		double gisSimplificationTolerance = 0.01d;
-		List<Integer> gids = new ArrayList<Integer>();
-		gids.add(8);
-		gids.add(2);
-		gids.add(9);
-		gids.add(20);
-		StringBuilder fileNameSuffix = new StringBuilder();
-		for(Integer gid: gids){
-			fileNameSuffix.append(gid);
-		}
-		Session sess = HibernateUtil.getSessionFactory().openSession();
-		//SQLQuery sqlQuery = sess.createSQLQuery("SELECT gid, nom_region, ST_AsKML(ST_Simplify(geom,0.01)) FROM lim_region_aout06_4326");
-		SQLQuery sqlQuery = sess.createSQLQuery("SELECT gid, nom_region as name, ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult FROM lim_region_aout06_4326 WHERE gid IN (:gids)");
-		sqlQuery.setParameterList("gids", gids);
-		sqlQuery.setDouble("tolerance", gisSimplificationTolerance);
-		sqlQuery.addScalar("gid");
-		sqlQuery.addScalar("name");
-		sqlQuery.addScalar("gisAsKmlResult");
-		sqlQuery.setResultTransformer(Transformers.aliasToBean(KmlDbRow.class));
-		List<KmlDbRow> kmlDbRows = sqlQuery.list();
-		String kml = KmlUtil.getKMLString(kmlDbRows);
-		KmlUtil.writeKmlFile(kml, "D:/NainaZo/workspace/Rebioma/war/temp", "limite_region_"+ fileNameSuffix.toString());
-	}
 
 	@SuppressWarnings("unchecked")
 	@Override

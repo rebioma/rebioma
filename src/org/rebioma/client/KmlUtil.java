@@ -97,12 +97,6 @@ public class KmlUtil {
 		return kml.toString();
 	}
 	
-	public static void writeKmlFile(String kml, String filePath, String fileName) throws IOException{
-		File file = new File(filePath + "/" + fileName + ".kml");
-		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-		writer.write(kml);
-		writer.close();
-	}
 	/**
 	 * <Placemark>
 		<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
