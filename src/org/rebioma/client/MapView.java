@@ -1534,26 +1534,6 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 	
 	public void loadKmlLayer(List<ShapeFileInfo> shapeFileInfos){
 		//chargement des occurrences
-//		Map<String, List<Integer>> tableGidsMap = new HashMap<String, List<Integer>>();
-//		List<Integer> gids = new ArrayList<Integer>();
-//		gids.add(1);//alaotra mangoro
-//		gids.add(4);//analanjirofo
-//		tableGidsMap.put("lim_region_aout06_4326", gids);
-		Map<String, List<Integer>> tableGidsMap = this.getTableGidsMap(shapeFileInfos);
-		Mask.mask((XElement)map.getElement(), "Loading");
-		mapGisService.findOccurrenceIdsByShapeFiles(tableGidsMap, new AsyncCallback<List<Integer>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				Mask.unmask((XElement)map.getElement());
-				Window.alert("Failure =>" + caught.getMessage());
-			}
-
-			@Override
-			public void onSuccess(List<Integer> result) {
-				reloadPageWithOccurrenceIds(result);
-				Mask.unmask((XElement)map.getElement());
-			}
-		});
 		/* ------------------------ chargement des layers ------------------------------- */
 		//en mode local on doit copier le fichier kml généré par notre servlet dans http://41.74.23.114/kmlfiles/ pour voir le layer sur le map
 //		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -1563,7 +1543,7 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 //				layer.setMap(map);
 //			}
 //		});
-		
+		Map<String, List<Integer>> tableGidsMap = this.getTableGidsMap(shapeFileInfos);
 		//en mode production on peut utiliser directement le servlet puisque l'url est public
 		final Set<String> urls = KmlUtil.getKmlFileUrl(tableGidsMap);
 		//suppression des layers existants
@@ -1584,5 +1564,22 @@ public class MapView extends ComponentView implements CheckedSelectionListener,
 				}
 			}
 		});
+		
+		
+		Mask.mask((XElement)map.getElement(), "Loading");
+		mapGisService.findOccurrenceIdsByShapeFiles(tableGidsMap, new AsyncCallback<List<Integer>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				Mask.unmask((XElement)map.getElement());
+				Window.alert("Failure =>" + caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(List<Integer> result) {
+				reloadPageWithOccurrenceIds(result);
+				Mask.unmask((XElement)map.getElement());
+			}
+		});
+		
 	}
 }
