@@ -72,11 +72,15 @@ public class KmlFileServlet extends HttpServlet {
 			//
 			java.util.Collections.sort(gids);
 			String kmlFileName = getKmlFileName(tableName, gids, gisTableSimplificationTolerance);
+
 			//resp.setContentType("application/vnd.google-earth.kmz"); //'application/vnd.google-earth.kml+xml' pour un fichier kml
 			resp.setContentType("application/vnd.google-earth.kmz");
 			String kmzFileName = kmlFileName.replaceAll(".kml", "");
 	        resp.setHeader("Content-Disposition", "attachment; filename=" + kmzFileName +".kmz");
 			File kmlFile = new File(getTempPath(), kmlFileName);
+			log.info("**************************************");
+			log.info("Mise à disposition du fichier " + kmlFile.getAbsolutePath() + " pour un telechargement");
+			log.info("**************************************");
 			DBFactory.getFileValidationService().zipFiles(new File[] {kmlFile}, resp.getOutputStream());
 		}
 		//kmlFile.delete();
@@ -100,6 +104,9 @@ public class KmlFileServlet extends HttpServlet {
 		String fileName = tableName + fileNameSuffix.toString();
 		File file = new File(getTempPath() + "/" + fileName + ".kml");
 		if(!file.exists()){
+			log.info("**************************************");
+			log.info("Création du fichier " + file.getAbsolutePath());
+			log.info("**************************************");
 			Session sess = HibernateUtil.getSessionFactory().openSession();
 			SQLQuery sqlQuery = sess.createSQLQuery(sql.toString());
 			sqlQuery.setDouble("tolerance", gisSimplificationTolerance);
@@ -110,6 +117,13 @@ public class KmlFileServlet extends HttpServlet {
 			List<KmlDbRow> kmlDbRows = sqlQuery.list();
 			String kml = KmlUtil.getKMLString(kmlDbRows);
 			writeKmlFile(kml, getTempPath(), fileName);
+			log.info("**************************************");
+			log.info("Fichier " + file.getAbsolutePath() + " Créé");
+			log.info("**************************************");
+		}else{
+			log.info("**************************************");
+			log.info("Le fichier " + file.getAbsolutePath() + " existe déjà");
+			log.info("**************************************");
 		}
 		return fileName + ".kml";
 	}
@@ -124,6 +138,7 @@ public class KmlFileServlet extends HttpServlet {
 	private String getTempPath(){
 		String rootPath = getServletContext().getRealPath("/");
 		String tempPath = rootPath + "temp";
+		log.info("Temp directory: " + tempPath);
 		return tempPath;
 	}
 	
