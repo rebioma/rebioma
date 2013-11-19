@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -51,10 +50,10 @@ public class KmlFileServlet extends HttpServlet {
 		String tableGidsParamName = KmlUtil.GIDS_PARAM_NAME;
 		String tableName = req.getParameter(tableParamName);
 		String tableGidsParam = req.getParameter(tableGidsParamName);
-		if(StringUtils.isNotBlank(tableName)){
+		if(tableName  != null && tableName.trim() != ""){
 			//on va decouper les gids et les transformer en integer
 			List<Integer> gids = new ArrayList<Integer>();
-			if(StringUtils.isNotBlank(tableGidsParam)){
+			if(tableGidsParam != null && tableGidsParam.trim() != ""){
 				String[] gidsStrs = tableGidsParam.split(gidsSplitRegex);
 				for(String gidsStr: gidsStrs){
 					try{
