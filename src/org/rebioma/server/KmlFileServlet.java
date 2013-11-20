@@ -87,8 +87,13 @@ public class KmlFileServlet extends HttpServlet {
 	
 	private String getKmlFileName(String tableName, List<Integer> gids, double gisSimplificationTolerance) throws IOException{
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(",").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
+//		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(",").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
+//		sql.append(" FROM ").append(tableName).append(" WHERE ");
+		//En attendant de trouver une convention sur les nom des colonnes à utiliser pour les fichiers shape importé
+		//on utilise en dure nom_region pour des fin de teste.
+		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(", nom_region as ").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
 		sql.append(" FROM ").append(tableName).append(" WHERE ");
+		
 		StringBuilder fileNameSuffix = new StringBuilder();
 		fileNameSuffix.append(gids.size());
 		int idx = 0;
