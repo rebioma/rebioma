@@ -81,6 +81,15 @@
   </servlet-mapping>
   
   <servlet>
+  	<servlet-name>kmlFileServlet</servlet-name>
+  	<servlet-class>org.rebioma.server.KmlFileServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>kmlFileServlet</servlet-name>
+  	<url-pattern>/rebioma/kmlfile</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
     <servlet-name>UserService</servlet-name>
     <servlet-class>org.rebioma.server.services.UserServiceImpl
     </servlet-class>
