@@ -57,12 +57,21 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			info.setTableName("lim_region_aout06");
 			infos.add(info);
 		}else{
+			Session sess = HibernateUtil.getSessionFactory().openSession();
+			StringBuilder sqlBuilder = new StringBuilder("SELECT gid, nom_region as name FROM ");
+			sqlBuilder.append(shapeFile.getTableName());
+			SQLQuery sqlQuery = sess
+					.createSQLQuery(sqlBuilder.toString());
+			sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
+			sqlQuery.addScalar(KmlUtil.KML_LABEL_NAME);
+			sqlQuery.setResultTransformer(Transformers.aliasToBean(KmlDbRow.class));
+			List<KmlDbRow> kmlDbRows = sqlQuery.list();
 			//recuperer les lignes d'un fichier shape
-			for(int i=1;i<= 22;i++){
+			for(KmlDbRow row: kmlDbRows){
 				ShapeFileInfo info = new ShapeFileInfo();
-				info.setGid(i);
-				info.setLibelle("region  Serveur " + i);
-				info.setTableName("lim_region_aout06");
+				info.setGid(row.getGid());
+				info.setLibelle(row.getName());
+				info.setTableName(shapeFile.getTableName());
 				infos.add(info);
 			}
 		}
