@@ -8,6 +8,8 @@ import org.rebioma.client.services.MapGisService;
 import org.rebioma.client.services.MapGisServiceAsync;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.sencha.gxt.core.client.ValueProvider;
 import com.sencha.gxt.data.client.loader.RpcProxy;
@@ -56,6 +58,8 @@ public class ShapeFileWindow extends Window implements SelectHandler {
 		VerticalLayoutContainer p = new VerticalLayoutContainer();
 	    p.setBorders(true);
 	    p.getElement().getStyle().setBackgroundColor("white");
+	    p.getElement().getStyle().setHeight(280, Unit.PX);
+	    p.getElement().getStyle().setOverflow(Overflow.AUTO);
 	    panel.add(p);
 	    
 		this.setHeadingText("Liste des fichiers shapes");
