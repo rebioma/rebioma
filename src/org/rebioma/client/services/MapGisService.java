@@ -35,4 +35,6 @@ public interface MapGisService  extends RemoteService {
 	 * @return liste d'identifiant d'occurrence
 	 */
 	List<Integer> findOccurrenceIdsByShapeFiles(Map<String, List<Integer>> tableGidsMap);
+	
+	void launchBatch(String pathShape,String pathShp2pgsql);
 }

@@ -18,5 +18,8 @@ public interface MapGisServiceAsync {
 	void findOccurrenceIdsByShapeFiles(Map<String, List<Integer>> tableGidsMap,
 			AsyncCallback<List<Integer>> callback);
 
+	void launchBatch(String pathShape, String pathShp2pgsql,
+			AsyncCallback<Void> callback);
+
 
 }
