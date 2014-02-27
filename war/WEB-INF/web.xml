@@ -13,6 +13,11 @@
 		<param-name>pathShp2pgsql</param-name>
 		<param-value>C:\\Program Files (x86)\\PostgreSQL\\9.0\\bin\\shp2pgsql -W LATIN1 -s 29702  </param-value>
 	</context-param>
+	
+	<context-param>
+		<param-name>batchDelayInMinute</param-name>
+		<param-value>30</param-value>
+	</context-param>
 
 	<context-param>
 		<param-name>maxSize</param-name>

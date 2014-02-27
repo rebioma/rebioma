@@ -137,6 +137,7 @@ public class AppStartUp implements ServletContextListener {
         
         final String pathShape = arg0.getServletContext().getInitParameter("pathShape");
         final String pathShp2pgsql = arg0.getServletContext().getInitParameter("pathShp2pgsql");
+        final int delay = Integer.parseInt(arg0.getServletContext().getInitParameter("batchDelayInMinute"));
         
         batchTimer.scheduleAtFixedRate(new TimerTask() {
 			
@@ -146,7 +147,7 @@ public class AppStartUp implements ServletContextListener {
 				 
 				mapService.launchBatch(pathShape,pathShp2pgsql);
 			}
-		}, 2000, 21600000); //21600000
+		}, 2000, delay*60*1000); //21600000
        
     }
  

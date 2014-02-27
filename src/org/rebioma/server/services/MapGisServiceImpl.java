@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,8 +159,10 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 	// return occurrenceIds;
 	// }
 	public void launchBatch(String pathShape, String pathShp2pgsql) {
+		System.out.println("START Batch " + new Date());
 		System.out.println("pathshape " + pathShape + "   pathshp2pgsql " + pathShp2pgsql);
 		File dir = new File(pathShape);
+		ArrayList<String> treatedFiles = new ArrayList<String>();
 		for (File child : dir.listFiles()) {
 			String extension="";
 			String filename="";
@@ -169,10 +172,12 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			    filename = child.getName().substring(0,i);
 			}
 			if(!extension.equalsIgnoreCase("shp"))
-				continue;			
+				continue;	
+			System.out.println("*** Start treating "+filename);
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			// CommandLine cmdLine =
 			// CommandLine.parse("C:\\Program Files (x86)\\PostgreSQL\\9.0\\bin\\shp2pgsql C:\\Users\\vahatra\\Downloads\\Region\\Region\\lim_region_aout06.shp lim_region_aout06_test rebioma");
+			System.out.println(pathShp2pgsql + "   "+ child.getAbsolutePath() +"  " + filename);
 			CommandLine cmdLine = CommandLine
 					.parse( pathShp2pgsql + "   "+ child.getAbsolutePath() +"  " + filename);
 			PumpStreamHandler psh = new PumpStreamHandler(bos, System.out);
@@ -187,7 +192,9 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 				Session session=null;
 				
 				try {
-					session = ManagedSession.createNewSessionAndTransaction();					
+					session = ManagedSession.createNewSessionAndTransaction();	
+					
+					//session.createSQLQuery("SET CLIENT_ENCODING TO LATIN1 ").executeUpdate();
 					session.createSQLQuery("DROP TABLE  IF EXISTS "+filename).executeUpdate();
 					session.createSQLQuery("DELETE FROM info_shape WHERE shapetable='"+filename+"'").executeUpdate();
 					session.createSQLQuery("insert into info_shape(shapetable) values('"+filename+"')").executeUpdate();					
@@ -206,7 +213,8 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			    
 				
 				bos.close();
-				System.out.println("VITAAA");
+				System.out.println("*** End treating "+filename);
+				treatedFiles.add(filename);
 			} catch (ExecuteException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -214,7 +222,18 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			}
 			
 		}
-
+		
+		
+		//deleting files 
+		System.out.println("*** DELETING FILES ");
+		for(String str:treatedFiles){
+			for (File child : dir.listFiles()) {
+				if(child.getName().startsWith(str))
+					child.delete();
+			}
+		}
+		System.out.println("*** END DELETING FILES ");
+		System.out.println("END batch");
 	}
 
 }
