@@ -60,13 +60,13 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		if (shapeFile == null) {
 			// recuperer la liste des fichier shapes
 			ShapeFileInfo info = new ShapeFileInfo();
-			info.setLibelle("Limite region Serveur");
-			info.setTableName("lim_region_aout06");
+			info.setLibelle("pas_join03_20130101_om");
+			info.setTableName("pas_join03_20130101_om");
 			infos.add(info);
 		} else {
 			Session sess = HibernateUtil.getSessionFactory().openSession();
 			StringBuilder sqlBuilder = new StringBuilder(
-					"SELECT gid, nom_region as name FROM ");
+					"SELECT gid, nom as name FROM ");
 			sqlBuilder.append(shapeFile.getTableName());
 			SQLQuery sqlQuery = sess.createSQLQuery(sqlBuilder.toString());
 			sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
