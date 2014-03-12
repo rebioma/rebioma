@@ -3,6 +3,10 @@ package org.rebioma.server.services;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,33 +58,77 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		return occurrenceIds;
 	}
 
+	private List<ShapeFileInfo> getListeShapeFile() throws Exception {
+		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
+		Session sess = null;
+
+		Connection conn = null;
+		Statement st = null;
+		ResultSet rst = null;
+		try {
+			sess = ManagedSession.createNewSessionAndTransaction();
+			conn = sess.connection();
+
+			st = conn.createStatement();
+			rst = st.executeQuery("SELECT shapetable FROM info_shape order by shapetable ");
+			while (rst.next()) {
+				ShapeFileInfo info = new ShapeFileInfo();
+				info.setLibelle(rst.getString("shapetable"));
+				info.setTableName(rst.getString("shapetable"));
+				infos.add(info);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rst != null)
+				rst.close();
+			if (st != null)
+				st.close();
+			if (conn != null)
+				conn.close();
+			if (sess != null)
+				sess.close();
+		}
+
+		return infos;
+	}
+
 	@Override
 	public List<ShapeFileInfo> getShapeFileItems(ShapeFileInfo shapeFile) {
 		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
 		if (shapeFile == null) {
 			// recuperer la liste des fichier shapes
-			ShapeFileInfo info = new ShapeFileInfo();
-			info.setLibelle("pas_join03_20130101_om");
-			info.setTableName("pas_join03_20130101_om");
-			infos.add(info);
+			try {
+				infos = getListeShapeFile();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		} else {
-			Session sess = HibernateUtil.getSessionFactory().openSession();
-			StringBuilder sqlBuilder = new StringBuilder(
-					"SELECT gid, nom as name FROM ");
-			sqlBuilder.append(shapeFile.getTableName());
-			SQLQuery sqlQuery = sess.createSQLQuery(sqlBuilder.toString());
-			sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
-			sqlQuery.addScalar(KmlUtil.KML_LABEL_NAME);
-			sqlQuery.setResultTransformer(Transformers
-					.aliasToBean(KmlDbRow.class));
-			List<KmlDbRow> kmlDbRows = sqlQuery.list();
-			// recuperer les lignes d'un fichier shape
-			for (KmlDbRow row : kmlDbRows) {
-				ShapeFileInfo info = new ShapeFileInfo();
-				info.setGid(row.getGid());
-				info.setLibelle(row.getName());
-				info.setTableName(shapeFile.getTableName());
-				infos.add(info);
+			Session sess = null;
+			try {
+				sess = HibernateUtil.getSessionFactory().openSession();
+				StringBuilder sqlBuilder = new StringBuilder(
+						"SELECT gid, nom as name FROM ");
+				sqlBuilder.append(shapeFile.getTableName());
+				SQLQuery sqlQuery = sess.createSQLQuery(sqlBuilder.toString());
+				sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
+				sqlQuery.addScalar(KmlUtil.KML_LABEL_NAME);
+				sqlQuery.setResultTransformer(Transformers
+						.aliasToBean(KmlDbRow.class));
+				List<KmlDbRow> kmlDbRows = sqlQuery.list();
+				// recuperer les lignes d'un fichier shape
+				for (KmlDbRow row : kmlDbRows) {
+					ShapeFileInfo info = new ShapeFileInfo();
+					info.setGid(row.getGid());
+					info.setLibelle(row.getName());
+					info.setTableName(shapeFile.getTableName());
+					infos.add(info);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if(sess!=null)
+					sess.close();
 			}
 		}
 		return infos;
@@ -160,75 +208,82 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 	// }
 	public void launchBatch(String pathShape, String pathShp2pgsql) {
 		System.out.println("START Batch " + new Date());
-		System.out.println("pathshape " + pathShape + "   pathshp2pgsql " + pathShp2pgsql);
+		System.out.println("pathshape " + pathShape + "   pathshp2pgsql "
+				+ pathShp2pgsql);
 		File dir = new File(pathShape);
 		ArrayList<String> treatedFiles = new ArrayList<String>();
 		for (File child : dir.listFiles()) {
-			String extension="";
-			String filename="";
+			String extension = "";
+			String filename = "";
 			int i = child.getName().lastIndexOf('.');
 			if (i > 0) {
-			    extension = child.getName().substring(i+1);
-			    filename = child.getName().substring(0,i);
+				extension = child.getName().substring(i + 1);
+				filename = child.getName().substring(0, i);
 			}
-			if(!extension.equalsIgnoreCase("shp"))
-				continue;	
-			System.out.println("*** Start treating "+filename);
+			if (!extension.equalsIgnoreCase("shp"))
+				continue;
+			System.out.println("*** Start treating " + filename);
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			// CommandLine cmdLine =
 			// CommandLine.parse("C:\\Program Files (x86)\\PostgreSQL\\9.0\\bin\\shp2pgsql C:\\Users\\vahatra\\Downloads\\Region\\Region\\lim_region_aout06.shp lim_region_aout06_test rebioma");
-			System.out.println(pathShp2pgsql + "   "+ child.getAbsolutePath() +"  " + filename);
-			CommandLine cmdLine = CommandLine
-					.parse( pathShp2pgsql + "   "+ child.getAbsolutePath() +"  " + filename);
+			System.out.println(pathShp2pgsql + "   " + child.getAbsolutePath()
+					+ "  " + filename);
+			CommandLine cmdLine = CommandLine.parse(pathShp2pgsql + "   "
+					+ child.getAbsolutePath() + "  " + filename);
 			PumpStreamHandler psh = new PumpStreamHandler(bos, System.out);
 			DefaultExecutor executor = new DefaultExecutor();
 			executor.setStreamHandler(psh);
 			try {
-				
+
 				executor.execute(cmdLine);
 
-				String sql =  bos.toString();
-				
-				Session session=null;
-				
+				String sql = bos.toString();
+
+				Session session = null;
+
 				try {
-					session = ManagedSession.createNewSessionAndTransaction();	
-					
-					//session.createSQLQuery("SET CLIENT_ENCODING TO LATIN1 ").executeUpdate();
-					session.createSQLQuery("DROP TABLE  IF EXISTS "+filename).executeUpdate();
-					session.createSQLQuery("DELETE FROM info_shape WHERE shapetable='"+filename+"'").executeUpdate();
-					session.createSQLQuery("insert into info_shape(shapetable) values('"+filename+"')").executeUpdate();					
-					session.createSQLQuery(sql).executeUpdate();					
-					session.createSQLQuery("CREATE INDEX idx_"+filename+" ON "+filename+" USING GIST(geom)").executeUpdate();	
-					
+					session = ManagedSession.createNewSessionAndTransaction();
+
+					// session.createSQLQuery("SET CLIENT_ENCODING TO LATIN1 ").executeUpdate();
+					session.createSQLQuery("DROP TABLE  IF EXISTS " + filename)
+							.executeUpdate();
+					session.createSQLQuery(
+							"DELETE FROM info_shape WHERE shapetable='"
+									+ filename + "'").executeUpdate();
+					session.createSQLQuery(
+							"insert into info_shape(shapetable) values('"
+									+ filename + "')").executeUpdate();
+					session.createSQLQuery(sql).executeUpdate();
+					session.createSQLQuery(
+							"CREATE INDEX idx_" + filename + " ON " + filename
+									+ " USING GIST(geom)").executeUpdate();
+
 					ManagedSession.commitTransaction(session);
-					//tx.commit();			
-		  	    }catch (Exception re) {			
-		  	      if(session!=null)ManagedSession.rollbackTransaction(session);
-		  	      re.printStackTrace();
-		  	    } 
-				finally {			
-				     //if(session!=null) session.close();
-				 }
-			    
-				
+					// tx.commit();
+				} catch (Exception re) {
+					if (session != null)
+						ManagedSession.rollbackTransaction(session);
+					re.printStackTrace();
+				} finally {
+					// if(session!=null) session.close();
+				}
+
 				bos.close();
-				System.out.println("*** End treating "+filename);
+				System.out.println("*** End treating " + filename);
 				treatedFiles.add(filename);
 			} catch (ExecuteException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
-		
-		
-		//deleting files 
+
+		// deleting files
 		System.out.println("*** DELETING FILES ");
-		for(String str:treatedFiles){
+		for (String str : treatedFiles) {
 			for (File child : dir.listFiles()) {
-				if(child.getName().startsWith(str))
+				if (child.getName().startsWith(str))
 					child.delete();
 			}
 		}
