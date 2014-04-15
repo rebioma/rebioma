@@ -4,6 +4,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +32,14 @@ public class KmlFileServlet extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 6949654865922950754L;
+	
+	private static final NumberFormat numberFormat; 
+	
+	static{
+		numberFormat = new DecimalFormat() ;
+		numberFormat.setMaximumFractionDigits(2); // la tu auras au plus 2 chiffres apres la virgule
+//		numberFormat.setMinimumFractionDigits(2);  // maintenant tout tes nombres auront 2 chiffres après la virgule
+	}
 	
 	 private final Logger log = Logger.getLogger(KmlFileServlet.class);
 
@@ -94,8 +104,11 @@ public class KmlFileServlet extends HttpServlet {
 		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(", nom as ").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
 		sql.append(" FROM ").append(tableName).append(" WHERE ");
 		
+		String tolerance = numberFormat.format(gisSimplificationTolerance);
+		tolerance = tolerance.replace(',', '_');
 		StringBuilder fileNameSuffix = new StringBuilder();
-		fileNameSuffix.append(gids.size());
+		fileNameSuffix.append(tolerance).append("_")
+			.append(gids.size());
 		int idx = 0;
 		for(Integer gid: gids){//on prefère utilise des OR plutot que un IN
 			if(idx > 0){
