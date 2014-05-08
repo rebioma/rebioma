@@ -3,10 +3,6 @@ package org.rebioma.server.services;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,7 +17,6 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
-import org.rebioma.client.KmlUtil;
 import org.rebioma.client.bean.KmlDbRow;
 import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.client.services.MapGisService;
@@ -37,6 +32,8 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 	 * 
 	 */
 	private static final long serialVersionUID = 1166479109921202488L;
+	
+	private ShapeFileService shapeFileService = ShapeFileServiceImpl.getInstance();
 
 	@Override
 	public List<Integer> findOccurrenceIdByGeom(String kml) {
@@ -58,48 +55,13 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		return occurrenceIds;
 	}
 
-	private List<ShapeFileInfo> getListeShapeFile() throws Exception {
-		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
-		Session sess = null;
-
-		Connection conn = null;
-		Statement st = null;
-		ResultSet rst = null;
-		try {
-			sess = ManagedSession.createNewSessionAndTransaction();
-			conn = sess.connection();
-
-			st = conn.createStatement();
-			rst = st.executeQuery("SELECT shapetable FROM info_shape order by shapetable ");
-			while (rst.next()) {
-				ShapeFileInfo info = new ShapeFileInfo();
-				info.setLibelle(rst.getString("shapetable"));
-				info.setTableName(rst.getString("shapetable"));
-				infos.add(info);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			if (rst != null)
-				rst.close();
-			if (st != null)
-				st.close();
-			if (conn != null)
-				conn.close();
-			if (sess != null)
-				sess.close();
-		}
-
-		return infos;
-	}
-
 	@Override
 	public List<ShapeFileInfo> getShapeFileItems(ShapeFileInfo shapeFile) {
 		List<ShapeFileInfo> infos = new ArrayList<ShapeFileInfo>();
 		if (shapeFile == null) {
 			// recuperer la liste des fichier shapes
 			try {
-				infos = getListeShapeFile();
+				infos = shapeFileService.getListeShapeFile();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -107,12 +69,14 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 			Session sess = null;
 			try {
 				sess = HibernateUtil.getSessionFactory().openSession();
-				StringBuilder sqlBuilder = new StringBuilder(
-						"SELECT gid, nom as name FROM ");
-				sqlBuilder.append(shapeFile.getTableName());
+				StringBuilder sqlBuilder = new StringBuilder();
+				sqlBuilder.append("SELECT ")
+							.append(shapeFile.getNomChampGid()).append(" as ").append("gid, ")
+							.append(shapeFile.getNomChampLibelle()).append(" as ").append("name ")
+							.append(" FROM ").append(shapeFile.getTableName());
 				SQLQuery sqlQuery = sess.createSQLQuery(sqlBuilder.toString());
-				sqlQuery.addScalar(KmlUtil.KML_GID_NAME);
-				sqlQuery.addScalar(KmlUtil.KML_LABEL_NAME);
+				sqlQuery.addScalar("gid");
+				sqlQuery.addScalar("name");
 				sqlQuery.setResultTransformer(Transformers
 						.aliasToBean(KmlDbRow.class));
 				List<KmlDbRow> kmlDbRows = sqlQuery.list();
@@ -122,6 +86,9 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 					info.setGid(row.getGid());
 					info.setLibelle(row.getName());
 					info.setTableName(shapeFile.getTableName());
+					info.setNomChampGeometrique(shapeFile.getNomChampGeometrique());
+					info.setNomChampGid(shapeFile.getNomChampGid());
+					info.setNomChampLibelle(shapeFile.getNomChampLibelle());
 					infos.add(info);
 				}
 			} catch (Exception e) {

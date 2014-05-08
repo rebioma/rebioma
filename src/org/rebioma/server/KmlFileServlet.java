@@ -22,7 +22,10 @@ import org.hibernate.Session;
 import org.hibernate.transform.Transformers;
 import org.rebioma.client.KmlUtil;
 import org.rebioma.client.bean.KmlDbRow;
+import org.rebioma.client.bean.ShapeFileInfo;
 import org.rebioma.server.services.DBFactory;
+import org.rebioma.server.services.ShapeFileService;
+import org.rebioma.server.services.ShapeFileServiceImpl;
 import org.rebioma.server.util.HibernateUtil;
 
 
@@ -34,6 +37,8 @@ public class KmlFileServlet extends HttpServlet {
 	private static final long serialVersionUID = 6949654865922950754L;
 	
 	private static final NumberFormat numberFormat; 
+	
+	private ShapeFileService shapeFileService = ShapeFileServiceImpl.getInstance();
 	
 	static{
 		numberFormat = new DecimalFormat() ;
@@ -96,13 +101,17 @@ public class KmlFileServlet extends HttpServlet {
 	}
 	
 	private String getKmlFileName(String tableName, List<Integer> gids, double gisSimplificationTolerance) throws IOException{
+		ShapeFileInfo shapeFileInfo = shapeFileService.getShapeFileInfo(tableName);
+		if(shapeFileInfo == null){
+			throw new IllegalArgumentException("Erreur de recuperation des infos de la table [" + tableName + "] dans la table info_shape");
+		}
 		StringBuilder sql = new StringBuilder();
-//		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(",").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
-//		sql.append(" FROM ").append(tableName).append(" WHERE ");
-		//En attendant de trouver une convention sur les nom des colonnes à utiliser pour les fichiers shape importé
-		//on utilise en dure nom_region pour des fin de teste.
-		sql.append("SELECT ").append(KmlUtil.KML_GID_NAME).append(", nom as ").append(KmlUtil.KML_LABEL_NAME).append(", ST_AsKML(ST_Simplify(geom, :tolerance)) as gisAsKmlResult ");
-		sql.append(" FROM ").append(tableName).append(" WHERE ");
+		sql.append("SELECT ")
+			.append(shapeFileInfo.getNomChampGid()).append(" as ").append(KmlUtil.KML_GID_NAME).append(", ")
+			.append(shapeFileInfo.getNomChampLibelle()).append(" as ").append(KmlUtil.KML_LABEL_NAME)
+			.append(", ST_AsKML(ST_Simplify(" + shapeFileInfo.getNomChampGeometrique() + ", :tolerance)) as gisAsKmlResult ");
+		sql.append(" FROM ").append(tableName)
+			.append(" WHERE ").append(shapeFileInfo.getNomChampGid()).append(" IN (");
 		
 		String tolerance = numberFormat.format(gisSimplificationTolerance);
 		tolerance = tolerance.replace(',', '_');
@@ -112,12 +121,13 @@ public class KmlFileServlet extends HttpServlet {
 		int idx = 0;
 		for(Integer gid: gids){//on prefère utilise des OR plutot que un IN
 			if(idx > 0){
-				sql.append(" OR ");
+				sql.append(",");
 			}
-			sql.append("gid=").append(gid);
+			sql.append(gid);
 			fileNameSuffix.append(gid);
 			idx++;
 		}
+		sql.append(") ");
 		String fileName = tableName + fileNameSuffix.toString();
 		File file = new File(getTempPath() + "/" + fileName + ".kml");
 		if(!file.exists()){

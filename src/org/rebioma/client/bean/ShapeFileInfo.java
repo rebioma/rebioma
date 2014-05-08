@@ -14,6 +14,12 @@ public class ShapeFileInfo implements Serializable{
 	private String libelle;//le label à afficher sur le FO
 	
 	private String tableName;//le nom de la table(shape) qui contient l'enregitrement
+	
+	private String nomChampGid;
+	
+	private String nomChampLibelle;
+	
+	private String nomChampGeometrique;
 
 	public int getGid() {
 		return gid;
@@ -37,5 +43,29 @@ public class ShapeFileInfo implements Serializable{
 
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
+	}
+
+	public String getNomChampGid() {
+		return nomChampGid;
+	}
+
+	public void setNomChampGid(String nomChampGid) {
+		this.nomChampGid = nomChampGid;
+	}
+
+	public String getNomChampLibelle() {
+		return nomChampLibelle;
+	}
+
+	public void setNomChampLibelle(String nomChampLibelle) {
+		this.nomChampLibelle = nomChampLibelle;
+	}
+
+	public String getNomChampGeometrique() {
+		return nomChampGeometrique;
+	}
+
+	public void setNomChampGeometrique(String nomChampGeometrique) {
+		this.nomChampGeometrique = nomChampGeometrique;
 	}
 }
