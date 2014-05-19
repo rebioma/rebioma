@@ -113,6 +113,7 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 		for (Entry<String, List<Integer>> entry : tableGidsMap.entrySet()) {
 			// String paramName = "gids" + index;
 			String tableName = entry.getKey();
+			ShapeFileInfo tableInfo = shapeFileService.getShapeFileInfo(tableName);
 			List<Integer> gids = entry.getValue();
 			sqlBuilder.append(" JOIN ").append(tableName).append(" ON ");
 			// sqlBuilder.append(tableName).append(".gid IN (:").append(paramName).append(") ");
@@ -122,7 +123,7 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 				if (gidIdx > 0) {
 					sqlBuilder.append(" OR ");
 				}
-				sqlBuilder.append(tableName).append(".gid=").append(gid);
+				sqlBuilder.append(tableName).append(".").append(tableInfo.getNomChampGid()).append("=").append(gid);
 				gidIdx++;
 			}
 			sqlBuilder.append(") ");
@@ -132,7 +133,7 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 				sqlWhereBuilder.append(" OR ");
 			}
 			sqlWhereBuilder.append(" ST_Within(").append("o.geom,")
-					.append(tableName).append(".geom").append(")='t' ");
+					.append(tableName).append(".").append(tableInfo.getNomChampGeometrique()).append(")='t' ");
 			// gidsParamMap.put(paramName, gids);
 			index++;
 		}
