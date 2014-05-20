@@ -73,7 +73,8 @@ public class MapGisServiceImpl extends RemoteServiceServlet implements
 				sqlBuilder.append("SELECT ")
 							.append(shapeFile.getNomChampGid()).append(" as ").append("gid, ")
 							.append(shapeFile.getNomChampLibelle()).append(" as ").append("name ")
-							.append(" FROM ").append(shapeFile.getTableName());
+							.append(" FROM ").append(shapeFile.getTableName())
+							.append(" ORDER BY ").append(shapeFile.getNomChampLibelle());
 				SQLQuery sqlQuery = sess.createSQLQuery(sqlBuilder.toString());
 				sqlQuery.addScalar("gid");
 				sqlQuery.addScalar("name");
