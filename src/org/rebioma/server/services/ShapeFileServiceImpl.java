@@ -41,10 +41,10 @@ public class ShapeFileServiceImpl implements ShapeFileService {
 			conn = sess.connection();
 
 			st = conn.createStatement();
-			rst = st.executeQuery("SELECT shapetable, nom_champ_gid, nom_champ_libelle, nom_champ_geometrique FROM info_shape order by shapetable ");
+			rst = st.executeQuery("SELECT shapetable, shapelabel, nom_champ_gid, nom_champ_libelle, nom_champ_geometrique FROM info_shape order by shapelabel ");
 			while (rst.next()) {
 				ShapeFileInfo info = new ShapeFileInfo();
-				info.setLibelle(rst.getString("shapetable"));
+				info.setLibelle(rst.getString("shapelabel"));
 				info.setTableName(rst.getString("shapetable"));
 				info.setNomChampGid(rst.getString("nom_champ_gid"));
 				info.setNomChampLibelle(rst.getString("nom_champ_libelle"));
